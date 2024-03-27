@@ -1,7 +1,7 @@
 package com.toletter.Entity;
 
 import com.toletter.Enums.LoginType;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.*;
 
 @Entity
