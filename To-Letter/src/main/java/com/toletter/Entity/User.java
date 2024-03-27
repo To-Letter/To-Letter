@@ -2,6 +2,8 @@ package com.toletter.Entity;
 
 import com.toletter.Enums.LoginType;
 import javax.persistence.*;
+
+import com.toletter.Enums.UserRole;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
@@ -38,6 +40,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LoginType loginType;
+
+    // 유저 권한 확인
+    @ApiModelProperty(value = "유저 권한", example = "admin/user")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole userRole;
 
     // 2차 인증 확인
     @ApiModelProperty(value = "2차 인증 확인", example = "T / F")
