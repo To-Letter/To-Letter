@@ -97,7 +97,7 @@ public class JwtTokenProvider {
     public String reissueAccessToken(String refreshToken) throws ParseException {
         String id = this.getUserId(refreshToken);
         if (id == null) {
-            throw new ErrorException("401", ErrorCode.ACCESS_DENIED_EXCEPTION);
+            throw new ErrorException("401", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         String token = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(refreshToken)
                 .getBody().get("token", String.class);

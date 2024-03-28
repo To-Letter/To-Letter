@@ -1,5 +1,6 @@
 package com.toletter.Entity;
 
+import com.toletter.DTO.user.Request.UserUpdateRequest;
 import com.toletter.Enums.LoginType;
 import javax.persistence.*;
 
@@ -8,9 +9,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 @Entity
-@Getter
+@Data
 @NoArgsConstructor // 기본 생성자를 자동으로 추가.
 @AllArgsConstructor // 필드 값을 파라미터로 받는 생성자 추가.
+@Builder
 @Table(name = "user")
 public class User {
 
@@ -20,7 +22,6 @@ public class User {
     private String id;
 
     @ApiModelProperty(value = "비밀번호(암호화)", example = "testPW")
-    @Column(nullable = false)
     private String password;
 
     @ApiModelProperty(value = "닉네임", example = "testNickname")
@@ -31,9 +32,9 @@ public class User {
     @Column(nullable = false)
     private String address;
 
-    @ApiModelProperty(value = "전화번호(2차인증 시 사용)", example = "01012345678")
+    @ApiModelProperty(value = "이메일", example = "test@gmail.com")
     @Column(nullable = false)
-    private String phoneNumber;
+    private String email;
 
     // 로그인타입
     @ApiModelProperty(value = "로그인 타입", example = "local/kakao")
@@ -41,14 +42,20 @@ public class User {
     @Column(nullable = false)
     private LoginType loginType;
 
-    // 유저 권한 확인
-    @ApiModelProperty(value = "유저 권한", example = "admin/user")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole userRole;
-
     // 2차 인증 확인
     @ApiModelProperty(value = "2차 인증 확인", example = "T / F")
     @Column(nullable = false)
     private boolean secondConfirmed;
+
+    // 유저 권한
+    @ApiModelProperty(value = "유저 권한", example = "admin / user")
+    @Column(nullable = false)
+    private UserRole userRole;
+
+    public void updateUser(UserUpdateRequest userUpdateRequest){
+        User.builder()
+                .nickname(userUpdateRequest.getNickname())
+                .email(userUpdateRequest.getEmail())
+                .build();
+    }
 }
