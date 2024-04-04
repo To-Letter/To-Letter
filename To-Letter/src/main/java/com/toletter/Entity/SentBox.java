@@ -24,7 +24,7 @@ public class SentBox { // 보낸 메일함
     private String user_id;
 
     // 보낸 시간
-    @ApiModelProperty(value = "보낸 시간", example = "2024-03-01/06:06:12")
+    @ApiModelProperty(value = "보낸 시간", example = "2024-03-01T06:06:12")
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime sentTime;
 

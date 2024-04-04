@@ -24,7 +24,7 @@ public class ReceivedBox { // 받은 메일함
     private String user_id;
 
     // 도착할 시간
-    @ApiModelProperty(value = "도착할 시간", example = "2024-03-01/06:06:12")
+    @ApiModelProperty(value = "도착할 시간", example = "2024-03-01T06:06:12")
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime receivedTime;
 

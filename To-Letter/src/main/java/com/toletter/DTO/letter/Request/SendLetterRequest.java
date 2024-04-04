@@ -13,7 +13,7 @@ public class SendLetterRequest {
     @ApiModelProperty(value = "받는 유저 아이디")
     private String toUserId;
 
-    @ApiModelProperty(value = "메일 도착할 시간")
+    @ApiModelProperty(value = "메일 도착할 시간", example = "2024-03-04T14:02:10")
     private LocalDateTime arrivedAt;
 
     @ApiModelProperty(value = "제목")
