@@ -10,8 +10,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
+@Data
 @NoArgsConstructor // 기본 생성자를 만들어줌.
+@AllArgsConstructor
+@Builder
 @Table(name = "auth")
 public class Auth {
     @ApiModelProperty(value = "ID(자동)", example = "1")
@@ -19,9 +21,9 @@ public class Auth {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "전화번호(2차인증 시 사용)", example = "01012345678")
+    @ApiModelProperty(value = "이메일(2차인증 시 사용)", example = "test@gmail.com")
     @Column
-    private String phoneNumber;
+    private String email;
 
     @ApiModelProperty(value = "2차 인증 보낸 시간", example = "2024-03-01/06:06:12")
     @CreationTimestamp

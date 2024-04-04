@@ -1,7 +1,10 @@
 package com.toletter.Controller;
 
+import com.toletter.DTO.email.Request.EmailVerifyRequest;
+import com.toletter.DTO.email.Response.EmailVerifyResponse;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
+import com.toletter.Service.EmailService;
 import com.toletter.Service.UserService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,7 @@ import javax.servlet.http.*;
 @RequestMapping(value = "/users")
 public class UserController {
     private final UserService userService;
+    private final EmailService emailService;
 
     // 회원가입
     @ApiResponses( value ={
@@ -71,5 +75,28 @@ public class UserController {
         System.out.println(httpServletRequest);
         userService.logout(httpServletRequest);
         return ResponseEntity.ok("로그아웃 성공");
+    }
+
+    // 2차 인증
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "2차 인증 메일 전송 성공"),
+    })
+    @ApiOperation(value = "2차 인증")
+    @PostMapping ("/email-auth")
+    public ResponseEntity<String> emailAuth(@RequestParam String toEmail) throws Exception {
+        emailService.sendEmail(toEmail);
+        return ResponseEntity.ok("이메일 전송 성공");
+    }
+
+    // 이메일 인증 검증
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "이메일 인증 성공"),
+            @ApiResponse(code = 401, message = "이메일 인증 실패 / 시간 초과 / 다시 보냄"),
+            @ApiResponse(code = 403, message = "이메일 인증 실패 / 랜덤 코드 불일치")
+    })
+    @ApiOperation(value = "2차 인증 검증")
+    @PostMapping("/email-verify")
+    public EmailVerifyResponse emailVerify(@RequestBody EmailVerifyRequest emailVerifyRequest) throws Exception {
+        return emailService.verifyEmail(emailVerifyRequest);
     }
 }
