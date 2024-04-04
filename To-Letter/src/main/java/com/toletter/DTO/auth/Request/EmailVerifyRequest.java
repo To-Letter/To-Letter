@@ -1,4 +1,4 @@
-package com.toletter.DTO.email.Request;
+package com.toletter.DTO.auth.Request;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

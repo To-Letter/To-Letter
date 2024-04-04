@@ -1,11 +1,9 @@
-package com.toletter.DTO.email.Request;
+package com.toletter.DTO.auth.Request;
 
 import com.toletter.Entity.Auth;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Data
 @RequiredArgsConstructor

@@ -1,8 +1,8 @@
 package com.toletter.Service;
 
-import com.toletter.DTO.email.Request.EmailSaveRequest;
-import com.toletter.DTO.email.Request.EmailVerifyRequest;
-import com.toletter.DTO.email.Response.EmailVerifyResponse;
+import com.toletter.DTO.auth.Request.EmailSaveRequest;
+import com.toletter.DTO.auth.Request.EmailVerifyRequest;
+import com.toletter.DTO.auth.Response.EmailVerifyResponse;
 import com.toletter.Entity.Auth;
 import com.toletter.Entity.User;
 import com.toletter.Error.ErrorCode;
