@@ -1,0 +1,102 @@
+package com.toletter.Service;
+
+import com.toletter.DTO.user.Request.*;
+import com.toletter.DTO.user.Response.*;
+import com.toletter.Entity.User;
+import com.toletter.Enums.LoginType;
+import com.toletter.Enums.UserRole;
+import com.toletter.Error.*;
+import com.toletter.JWT.*;
+import com.toletter.Repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.*;
+
+@Service
+@RequiredArgsConstructor // 초기화되지 않은 final 필드에 대해 생성자를 생성해줌.
+public class UserService {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private  final JwtTokenProvider jwtTokenProvider;
+
+    // 회원가입
+    @Transactional
+    public void signup(UserSignupRequest userSignupRequest, HttpServletResponse httpServletResponse){
+        // 아이디가 존재하면
+        if(userRepository.existsById(userSignupRequest.getId())){
+            throw new ErrorException("같은 아이디가 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+        User user = userSignupRequest.toEntity();
+
+        // 카카오 로그인인지 로컬 로그인인지 구분
+        if(userSignupRequest.getLoginType().equals(LoginType.kakaoLogin)){
+            user.setSecondConfirmed(true);
+        } else if (userSignupRequest.getLoginType().equals(LoginType.localLogin)) {
+            // 비밀번호 암호화
+            user.setPassword(passwordEncoder.encode(userSignupRequest.getPassword()));
+            user.setSecondConfirmed(false);
+        }
+        user.setUserRole(UserRole.User);
+        userRepository.save(user);
+        this.setJwtTokenInHeader(user.getId(), user.getUserRole(), httpServletResponse);
+    }
+
+    // 로그인
+    public UserLoginResponse login(UserLoginRequest userLoginRequest, HttpServletResponse httpServletResponse){
+        // 아이디가 존재하지 않으면
+        if(!userRepository.existsById(userLoginRequest.getId())){
+            return UserLoginResponse.res("400", "로그인 실패 / 아이디 없음");
+        }
+        User user = userRepository.findById(userLoginRequest.getId()).orElseThrow();
+
+        // 비밀번호 틀리면
+        if(!passwordEncoder.matches(userLoginRequest.getPassword(), user.getPassword())){
+            return UserLoginResponse.res("401", "로그인 실패 / 비밀번호 틀림");
+        }
+        // 2차 인증 안하면
+        if(!user.isSecondConfirmed()){
+            return UserLoginResponse.res("403", "로그인 실패 / 2차 인증 안됨");
+        }
+        this.setJwtTokenInHeader(userLoginRequest.getId(), user.getUserRole(), httpServletResponse);
+        return UserLoginResponse.res("200", "로그인 성공");
+    }
+
+    // 유저 정보 보여주기
+    public UserViewResponse viewUser(HttpServletRequest httpServletRequest){
+        User user = this.findUserByToken(httpServletRequest);
+        return  UserViewResponse.res(user.getId(), user.getNickname(), user.getEmail());
+    }
+
+    // 유저 정보 수정
+    @Transactional
+    public UserUpdateResponse updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest){
+        User user = this.findUserByToken(httpServletRequest);
+        user.updateUser(userUpdateRequest);
+        userRepository.save(user);
+        return UserUpdateResponse.res("200", "수정 완료",  user);
+    }
+
+    // 로그아웃
+    public void logout(HttpServletRequest httpServletRequest){
+        jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
+    }
+
+    // 토큰 헤더에 저장
+    public void setJwtTokenInHeader(String id, UserRole userRole, HttpServletResponse response) {
+        String accessToken = jwtTokenProvider.createAccessToken(id, userRole);
+        String refreshToken = jwtTokenProvider.createRefreshToken(id, userRole);
+
+        jwtTokenProvider.setHeaderAccessToken(response, accessToken);
+        jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
+    }
+
+    // 토큰에서 정보 가져오기
+    public User findUserByToken(HttpServletRequest request) {
+        String id = jwtTokenProvider.getUserId(jwtTokenProvider.resolveAccessToken(request));
+        return userRepository.findById(id).orElseThrow();
+    }
+
+}
