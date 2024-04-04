@@ -91,8 +91,6 @@ public class UserService {
 
         jwtTokenProvider.setHeaderAccessToken(response, accessToken);
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
-        System.out.println(response);
-        System.out.println(accessToken);
     }
 
     // 토큰에서 정보 가져오기
