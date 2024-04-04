@@ -10,7 +10,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
+@Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "letter")
 public class Letter {
@@ -27,14 +29,13 @@ public class Letter {
     private String fromUserId;
 
     // 메일 보낸 시간
-    @ApiModelProperty(value = "메일 보낸 시간", example = "2024-03-01/06:06:12")
+    @ApiModelProperty(value = "메일 보낸 시간", example = "2024-03-01T06:06:12")
     @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime createdAt;
 
     // 메일 도착할 시간
-    @ApiModelProperty(value = "메일 도착할 시간", example = "2024-03-04/06:06:12")
-    @CreationTimestamp
+    @ApiModelProperty(value = "메일 도착할 시간", example = "2024-03-04T06:06:12")
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime arrivedAt;
 

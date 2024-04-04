@@ -10,10 +10,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
+@Data
 @NoArgsConstructor
 @Table(name = "received_box")
-public class ReceivedBox {
+public class ReceivedBox { // 받은 메일함
     @ApiModelProperty(value = "ID(자동)", example = "1")
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,7 +25,6 @@ public class ReceivedBox {
 
     // 도착할 시간
     @ApiModelProperty(value = "도착할 시간", example = "2024-03-01/06:06:12")
-    @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime receivedTime;
 
