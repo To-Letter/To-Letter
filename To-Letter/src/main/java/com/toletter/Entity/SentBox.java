@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Table(name = "sent_box")
 public class SentBox { // 보낸 메일함
     @ApiModelProperty(value = "ID(자동)", example = "1")
