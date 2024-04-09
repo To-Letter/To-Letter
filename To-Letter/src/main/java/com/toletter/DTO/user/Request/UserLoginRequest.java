@@ -10,6 +10,6 @@ public class UserLoginRequest {
     @ApiModelProperty(value = "아이디(메일보낼 때 사용)")
     private String id;
 
-    @ApiModelProperty(value = "비밀번호(암호화)")
+    @ApiModelProperty(value = "비밀번호")
     private String password;
 }

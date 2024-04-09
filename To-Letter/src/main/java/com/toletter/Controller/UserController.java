@@ -1,7 +1,7 @@
 package com.toletter.Controller;
 
-import com.toletter.DTO.email.Request.EmailVerifyRequest;
-import com.toletter.DTO.email.Response.EmailVerifyResponse;
+import com.toletter.DTO.auth.Request.EmailVerifyRequest;
+import com.toletter.DTO.auth.Response.EmailVerifyResponse;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
 import com.toletter.Service.EmailService;
@@ -25,7 +25,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "회원가입 성공"),
             @ApiResponse(code = 401, message = "같은 아이디 존재")
     })
-    @ApiOperation(value = "유저 회원가입")
+    @ApiOperation(value = "유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/signup")
     public ResponseEntity<String> userSignUp(@RequestBody UserSignupRequest userSignupRequest, HttpServletResponse response) {
         userService.signup(userSignupRequest, response);
@@ -39,7 +39,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "비밀번호 틀림"),
             @ApiResponse(code = 403, message = "2차 인증 안됨")
     })
-    @ApiOperation(value = "유저 로그인")
+    @ApiOperation(value = "유저 로그인", notes = "토큰 필요 없음")
     @PostMapping("/login")
     public UserLoginResponse userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletResponse response) {
         return userService.login(userLoginRequest, response);
@@ -59,7 +59,7 @@ public class UserController {
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "유저 정보 수정 성공"),
     })
-    @ApiOperation(value = "유저 정보 보여주기")
+    @ApiOperation(value = "유저 정보 수정")
     @PutMapping("/update")
     public UserUpdateResponse updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest) {
         return userService.updateUser(userUpdateRequest, httpServletRequest);

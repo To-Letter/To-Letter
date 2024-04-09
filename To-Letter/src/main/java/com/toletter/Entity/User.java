@@ -28,7 +28,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String nickname;
 
-    @ApiModelProperty(value = "주소", example = "37.343645200551194, 126.95377470484397")
+    @ApiModelProperty(value = "주소", example = "경기도 군포시")
     @Column(nullable = false)
     private String address;
 

@@ -1,4 +1,4 @@
-package com.toletter.DTO.email.Response;
+package com.toletter.DTO.auth.Response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

@@ -25,7 +25,7 @@ public class Auth {
     @Column
     private String email;
 
-    @ApiModelProperty(value = "2차 인증 보낸 시간", example = "2024-03-01/06:06:12")
+    @ApiModelProperty(value = "2차 인증 보낸 시간", example = "2024-03-01T06:06:12")
     @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime createdDate;

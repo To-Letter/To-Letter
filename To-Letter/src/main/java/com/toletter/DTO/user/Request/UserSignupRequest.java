@@ -11,7 +11,7 @@ public class UserSignupRequest {
     @ApiModelProperty(value = "아이디(메일보낼 때 사용)")
     private String id;
 
-    @ApiModelProperty(value = "비밀번호(암호화)")
+    @ApiModelProperty(value = "비밀번호")
     private String password;
 
     @ApiModelProperty(value = "닉네임")
@@ -23,7 +23,7 @@ public class UserSignupRequest {
     @ApiModelProperty(value = "이메일")
     private String email;
 
-    @ApiModelProperty(value = "로그인 타입", example = "local/kakao")
+    @ApiModelProperty(value = "로그인 타입", example = "localLogin/kakaoLogin")
     private LoginType loginType;
 
     public User toEntity(){
