@@ -5,13 +5,16 @@ import com.toletter.DTO.auth.Response.EmailVerifyResponse;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
 import com.toletter.Service.EmailService;
+import com.toletter.Service.KakaoService;
 import com.toletter.Service.UserService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.*;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ import javax.servlet.http.*;
 public class UserController {
     private final UserService userService;
     private final EmailService emailService;
+    private final KakaoService kakaoService;
 
     // 회원가입
     @ApiResponses( value ={
@@ -43,6 +47,30 @@ public class UserController {
     @PostMapping("/login")
     public UserLoginResponse userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletResponse response) {
         return userService.login(userLoginRequest, response);
+    }
+
+    // 카카오 인증 코드 발급
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "인증코드 발급 성공"),
+    })
+    @ApiOperation(value = "카카오 인증 코드 발급", notes = "카카오 인증 코드 발급을 위한 URL 발급")
+    @GetMapping("/kakao/auth")
+    public String authKakao(){
+        return kakaoService.getAuthCode();
+    }
+
+    // 카카오 로그인
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "카카오 로그인 성공"),
+            @ApiResponse(code = 401, message = "인증 실패함. / 토큰이 이상하거나 만료됨."),
+            @ApiResponse(code = 404, message = "카카오 토큰이 발급이 안됨."),
+    })
+    @ApiOperation(value = "카카오 로그인")
+    @PostMapping("/kakao/token")
+    public Map tokenKaKao(@RequestParam String code) throws ParseException {
+        Map token = kakaoService.getTokenUrl(code);
+        Map userInfo = kakaoService.getUserInfo(token);
+        return userInfo;
     }
 
     // 마이페이지
