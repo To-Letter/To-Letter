@@ -24,6 +24,30 @@ public class UserController {
     private final EmailService emailService;
     private final KakaoService kakaoService;
 
+    // 아이디 중복 확인
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "아이디 중복 없음"),
+            @ApiResponse(code = 401, message = "같은 아이디 존재")
+    })
+    @ApiOperation(value = "아이디 중복 확인")
+    @PostMapping("/confirmID")
+    public ResponseEntity<String> confirmID(@RequestParam String userID) {
+        userService.confirmID(userID);
+        return ResponseEntity.ok("아이디 중복 없음.");
+    }
+
+    // 닉네임 중복 확인
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "닉네임 중복 없음"),
+            @ApiResponse(code = 401, message = "같은 닉네임 존재")
+    })
+    @ApiOperation(value = "닉네임 중복 확인")
+    @PostMapping("/confirmNickname")
+    public ResponseEntity<String> confirmNickname(@RequestParam String userNickname) {
+        userService.confirmNickname(userNickname);
+        return ResponseEntity.ok("닉네임 중복 없음.");
+    }
+
     // 회원가입
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "회원가입 성공"),
