@@ -30,7 +30,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "같은 아이디 존재")
     })
     @ApiOperation(value = "아이디 중복 확인")
-    @PostMapping("/confirmID")
+    @PostMapping("/su/confirmID")
     public ResponseEntity<String> confirmID(@RequestParam String userID) {
         userService.confirmID(userID);
         return ResponseEntity.ok("아이디 중복 없음.");
@@ -42,7 +42,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "같은 닉네임 존재")
     })
     @ApiOperation(value = "닉네임 중복 확인")
-    @PostMapping("/confirmNickname")
+    @PostMapping("/su/confirmNickname")
     public ResponseEntity<String> confirmNickname(@RequestParam String userNickname) {
         userService.confirmNickname(userNickname);
         return ResponseEntity.ok("닉네임 중복 없음.");
@@ -54,7 +54,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "같은 아이디 존재")
     })
     @ApiOperation(value = "유저 회원가입", notes = "토큰 필요 없음")
-    @PostMapping("/signup")
+    @PostMapping("/su/signup")
     public ResponseEntity<String> userSignUp(@RequestBody UserSignupRequest userSignupRequest, HttpServletResponse response) {
         userService.signup(userSignupRequest, response);
         return ResponseEntity.ok("회원가입 성공");
@@ -68,7 +68,7 @@ public class UserController {
             @ApiResponse(code = 403, message = "2차 인증 안됨")
     })
     @ApiOperation(value = "유저 로그인", notes = "토큰 필요 없음")
-    @PostMapping("/login")
+    @PostMapping("/su/login")
     public UserLoginResponse userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletResponse response) {
         return userService.login(userLoginRequest, response);
     }
@@ -134,7 +134,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "2차 인증 메일 전송 성공"),
     })
     @ApiOperation(value = "2차 인증")
-    @PostMapping ("/email-auth")
+    @PostMapping ("/email/auth")
     public ResponseEntity<String> emailAuth(@RequestParam String toEmail) throws Exception {
         emailService.sendEmail(toEmail);
         return ResponseEntity.ok("이메일 전송 성공");
@@ -147,7 +147,7 @@ public class UserController {
             @ApiResponse(code = 403, message = "이메일 인증 실패 / 랜덤 코드 불일치")
     })
     @ApiOperation(value = "2차 인증 검증")
-    @PostMapping("/email-verify")
+    @PostMapping("/email/verify")
     public EmailVerifyResponse emailVerify(@RequestBody EmailVerifyRequest emailVerifyRequest) throws Exception {
         return emailService.verifyEmail(emailVerifyRequest);
     }
