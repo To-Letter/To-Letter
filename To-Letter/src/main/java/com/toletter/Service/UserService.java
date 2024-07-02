@@ -22,13 +22,23 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private  final JwtTokenProvider jwtTokenProvider;
 
+    // 아이디 중복 확인
+    public void confirmID(String userID){
+        if(userRepository.existsById(userID)){
+            throw new ErrorException("같은 아이디가 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+    }
+
+    // 닉네임 중복 확인
+    public void confirmNickname(String userNickname){
+        if(userRepository.existsByNickname(userNickname)){
+            throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+    }
+
     // 회원가입
     @Transactional
     public void signup(UserSignupRequest userSignupRequest, HttpServletResponse httpServletResponse){
-        // 아이디가 존재하면
-        if(userRepository.existsById(userSignupRequest.getId())){
-            throw new ErrorException("같은 아이디가 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
-        }
         User user = userSignupRequest.toEntity();
 
         // 카카오 로그인인지 로컬 로그인인지 구분
