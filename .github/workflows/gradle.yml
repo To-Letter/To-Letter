@@ -21,18 +21,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    ## 포트 3000을 사용 중인 프로세스 중지
-    - name: Stop process using port 3000
-      run: |
-        sudo lsof -i :3000 | grep LISTEN | awk '{print $2}' | xargs -r sudo kill -9
-
-    ## docker 실행 중인 거 멈추고 삭제
-    - name: Stop and remove all running Docker containers
-      run: |
-        docker ps -a
-        docker ps -q | xargs -r docker stop
-        docker ps -a -q | xargs -r docker rm
-
     ## application.yml 파일 생성
     - name: Make application.yml
       run: |
@@ -64,6 +52,10 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
         port: 22
         script: |
-          sudo docker image rm ${{ secrets.DOCKER_REPO }}
-          sudo docker pull ${{ secrets.DOCKER_REPO }}
+          sudo docker pull ${{ secrets.DOCKER_REPO }} 
+          sudo docker stop $(docker ps -a -q)
           sudo docker run -d -p 3000:3000 ${{ secrets.DOCKER_REPO }}
+          sudo docker rm $(docker ps --filter 'status=exited' -a -q)
+          sudo docker image prune -a -f
+          
+          
