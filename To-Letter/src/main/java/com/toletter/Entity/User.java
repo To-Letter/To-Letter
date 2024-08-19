@@ -53,9 +53,7 @@ public class User {
     private UserRole userRole;
 
     public void updateUser(UserUpdateRequest userUpdateRequest){
-        User.builder()
-                .nickname(userUpdateRequest.getNickname())
-                .email(userUpdateRequest.getEmail())
-                .build();
+        this.email = userUpdateRequest.getEmail();
+        this.nickname = userUpdateRequest.getNickname();
     }
 }
