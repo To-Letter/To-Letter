@@ -113,7 +113,7 @@ public class UserController {
     })
     @ApiOperation(value = "유저 정보 수정")
     @PutMapping("/update")
-    public UserUpdateResponse updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest) {
+    public UserUpdateResponse updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest) {
         return userService.updateUser(userUpdateRequest, httpServletRequest);
     }
 
