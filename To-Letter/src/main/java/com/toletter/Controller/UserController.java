@@ -124,7 +124,6 @@ public class UserController {
     @ApiOperation(value = "로그아웃")
     @GetMapping("/logout")
     public ResponseEntity<String> updateUser(HttpServletRequest httpServletRequest) {
-        System.out.println(httpServletRequest);
         userService.logout(httpServletRequest);
         return ResponseEntity.ok("로그아웃 성공");
     }

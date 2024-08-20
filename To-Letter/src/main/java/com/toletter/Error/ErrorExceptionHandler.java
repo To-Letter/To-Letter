@@ -9,6 +9,6 @@ public class ErrorExceptionHandler {
 
     @ExceptionHandler(ErrorException.class)
     protected ResponseEntity<ErrorResponseEntity> handleCustomException(ErrorException e) {
-        return ErrorResponseEntity.toResponseEntity(e.getErrorCode());
+        return ErrorResponseEntity.toResponseEntity(e.getMessage(), e.getErrorCode());
     }
 }
