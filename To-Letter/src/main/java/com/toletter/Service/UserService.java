@@ -94,6 +94,20 @@ public class UserService {
         jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
     }
 
+    // 유저 탈퇴
+    public UserDeleteResponse userDelete(UserDeleteRequest userDeleteRequest){
+        // 유저의 아이디가 존재하지 않으면
+        if(!userRepository.existsById(userDeleteRequest.getId())){
+            return UserDeleteResponse.res("401", "유저 아이디가 없음.");
+        }
+        User user = userRepository.findById(userDeleteRequest.getId()).orElseThrow();
+        if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
+            return UserDeleteResponse.res("401", "비밀번호가 틀림");
+        }
+        userRepository.delete(user);
+        return UserDeleteResponse.res("200", "탈퇴 성공");
+    }
+
     // 토큰 헤더에 저장
     public void setJwtTokenInHeader(String id, UserRole userRole, HttpServletResponse response) {
         String accessToken = jwtTokenProvider.createAccessToken(id, userRole);
