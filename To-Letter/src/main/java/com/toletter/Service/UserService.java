@@ -95,7 +95,7 @@ public class UserService {
     }
 
     // 유저 탈퇴
-    public UserDeleteResponse userDelete(UserDeleteRequest userDeleteRequest){
+    public UserDeleteResponse userDelete(UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest){
         // 유저의 아이디가 존재하지 않으면
         if(!userRepository.existsById(userDeleteRequest.getId())){
             return UserDeleteResponse.res("401", "유저 아이디가 없음.");
@@ -104,6 +104,7 @@ public class UserService {
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return UserDeleteResponse.res("401", "비밀번호가 틀림");
         }
+        jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
         userRepository.delete(user);
         return UserDeleteResponse.res("200", "탈퇴 성공");
     }

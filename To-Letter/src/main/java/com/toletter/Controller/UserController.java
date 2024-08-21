@@ -159,7 +159,7 @@ public class UserController {
     })
     @ApiOperation(value = "유저 탈퇴")
     @DeleteMapping("/delete")
-    public UserDeleteResponse userDelete(@RequestBody UserDeleteRequest userDeleteRequest) {
-        return userService.userDelete(userDeleteRequest);
+    public UserDeleteResponse userDelete(@RequestBody UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest) {
+        return userService.userDelete(userDeleteRequest, httpServletRequest);
     }
 }
