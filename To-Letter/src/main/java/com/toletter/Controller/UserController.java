@@ -150,4 +150,15 @@ public class UserController {
     public EmailVerifyResponse emailVerify(@RequestBody EmailVerifyRequest emailVerifyRequest) throws Exception {
         return emailService.verifyEmail(emailVerifyRequest);
     }
+
+    // 유저 탈퇴
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "탈퇴 성공"),
+            @ApiResponse(code = 401, message = "탈퇴 실패 / 비밀번호 틀림 / 유저 아이디가 없음")
+    })
+    @ApiOperation(value = "유저 탈퇴")
+    @DeleteMapping("/delete")
+    public UserDeleteResponse userDelete(@RequestBody UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest) {
+        return userService.userDelete(userDeleteRequest, httpServletRequest);
+    }
 }
