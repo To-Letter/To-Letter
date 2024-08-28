@@ -148,7 +148,7 @@ public class JwtTokenProvider {
         } catch (MalformedJwtException e) {
             throw new MalformedJwtException("Invalid JWT token", e);
         } catch (ExpiredJwtException e) {
-            throw new JwtExpiredException("JWT token has expired");
+            throw new ErrorException("토큰 만료", ErrorCode.UNAUTHORIZED_EXCEPTION);
         } catch (UnsupportedJwtException e) {
             throw new UnsupportedJwtException("JWT token is unsupported", e);
         } catch (IllegalArgumentException e) {

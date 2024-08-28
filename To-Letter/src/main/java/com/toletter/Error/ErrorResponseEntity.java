@@ -11,13 +11,13 @@ public class ErrorResponseEntity {
     private String code;
     private String message;
 
-    public static ResponseEntity<ErrorResponseEntity> toResponseEntity(ErrorCode e){
+    public static ResponseEntity<ErrorResponseEntity> toResponseEntity(String message, ErrorCode e){
         return ResponseEntity
                 .status(e.getStatus())
                 .body(ErrorResponseEntity.builder()
                         .status(e.getStatus().value())
                         .code(e.name())
-                        .message(e.getMessage())
+                        .message(message)
                         .build()
                 );
     }
