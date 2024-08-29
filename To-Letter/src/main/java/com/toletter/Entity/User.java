@@ -16,10 +16,10 @@ import lombok.*;
 @Table(name = "user")
 public class User {
 
-    @ApiModelProperty(value = "아이디(메일보낼 때 사용)", example = "test")
+    @ApiModelProperty(value = "이메일(메일보낼 때 사용)", example = "test@gmail.com")
     @Id
     @Column(unique = true, nullable = false)
-    private String id;
+    private String email;
 
     @ApiModelProperty(value = "비밀번호(암호화)", example = "testPW")
     private String password;
@@ -28,13 +28,9 @@ public class User {
     @Column(unique = true, nullable = false)
     private String nickname;
 
-    @ApiModelProperty(value = "주소", example = "경기도 군포시")
+    @ApiModelProperty(value = "주소(편지를 받을 집주소)", example = "경기도 군포시")
     @Column(nullable = false)
     private String address;
-
-    @ApiModelProperty(value = "이메일", example = "test@gmail.com")
-    @Column(nullable = false)
-    private String email;
 
     // 로그인타입
     @ApiModelProperty(value = "로그인 타입", example = "local/kakao")
@@ -53,7 +49,7 @@ public class User {
     private UserRole userRole;
 
     public void updateUser(UserUpdateRequest userUpdateRequest){
-        this.email = userUpdateRequest.getEmail();
+        this.address = userUpdateRequest.getAddress();
         this.nickname = userUpdateRequest.getNickname();
     }
 }

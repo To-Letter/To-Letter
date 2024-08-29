@@ -10,6 +10,6 @@ public class UserUpdateRequest {
     @ApiModelProperty(value = "닉네임")
     private String nickname;
 
-    @ApiModelProperty(value = "이메일")
-    private String email;
+    @ApiModelProperty(value = "주소")
+    private String address;
 }

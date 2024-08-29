@@ -24,16 +24,16 @@ public class UserController {
     private final EmailService emailService;
     private final KakaoService kakaoService;
 
-    // 아이디 중복 확인
+    // 이메일 중복 확인
     @ApiResponses( value ={
-            @ApiResponse(code = 200, message = "아이디 중복 없음"),
-            @ApiResponse(code = 401, message = "같은 아이디 존재")
+            @ApiResponse(code = 200, message = "이메일 중복 없음"),
+            @ApiResponse(code = 401, message = "같은 이메일 존재")
     })
-    @ApiOperation(value = "아이디 중복 확인")
-    @PostMapping("/su/confirmID")
-    public ResponseEntity<String> confirmID(@RequestParam String userID) {
-        userService.confirmID(userID);
-        return ResponseEntity.ok("아이디 중복 없음.");
+    @ApiOperation(value = "이메일 중복 확인")
+    @PostMapping("/su/confirmEmail")
+    public ResponseEntity<String> confirmEmail(@RequestParam String userEmail) {
+        userService.confirmEmail(userEmail);
+        return ResponseEntity.ok("이메일 중복 없음.");
     }
 
     // 닉네임 중복 확인
@@ -51,7 +51,7 @@ public class UserController {
     // 회원가입
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "회원가입 성공"),
-            @ApiResponse(code = 401, message = "같은 아이디 존재")
+            @ApiResponse(code = 401, message = "같은 이메일 존재")
     })
     @ApiOperation(value = "유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/su/signup")
@@ -63,7 +63,7 @@ public class UserController {
     // 로그인
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "로그인 성공"),
-            @ApiResponse(code = 400, message = "아이디 존재안함"),
+            @ApiResponse(code = 400, message = "이메일 존재안함"),
             @ApiResponse(code = 401, message = "비밀번호 틀림"),
             @ApiResponse(code = 403, message = "2차 인증 안됨")
     })
@@ -154,7 +154,7 @@ public class UserController {
     // 유저 탈퇴
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "탈퇴 성공"),
-            @ApiResponse(code = 401, message = "탈퇴 실패 / 비밀번호 틀림 / 유저 아이디가 없음")
+            @ApiResponse(code = 401, message = "탈퇴 실패 / 비밀번호 틀림 / 유저 이메일이 없음")
     })
     @ApiOperation(value = "유저 탈퇴")
     @DeleteMapping("/delete")

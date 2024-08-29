@@ -10,15 +10,15 @@ import java.util.List;
 @Getter
 @Builder
 public class ReceivedLetterResponse {
-    @Schema(description = "아이디")
-    private String user_id;
+    @Schema(description = "닉네임")
+    private String user_nickname;
 
     @Schema(description = "받은 편지 list")
     private List<Letter> listLetter;
 
-    public static ReceivedLetterResponse res(String user_id, List<Letter> listLetter) {
+    public static ReceivedLetterResponse res(String user_nickname, List<Letter> listLetter) {
         return ReceivedLetterResponse.builder()
-                .user_id(user_id)
+                .user_nickname(user_nickname)
                 .listLetter(listLetter)
                 .build();
     }

@@ -9,6 +9,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReceivedBoxRepository extends JpaRepository<ReceivedBox, Long> {
-    @Query("SELECT r.letter FROM ReceivedBox r WHERE r.receivedTime < :nowTime AND r.user_id = :userId")
-    List<Letter> findAllByReceivedTimeBeforeAndUserID(LocalDateTime nowTime, String userId);
+    @Query("SELECT r.letter FROM ReceivedBox r WHERE r.receivedTime < :nowTime AND r.user_nickname = :userNickname")
+    List<Letter> findAllByReceivedTimeBeforeAndUserNickname(LocalDateTime nowTime, String userNickname);
 }

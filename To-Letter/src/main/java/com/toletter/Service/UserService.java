@@ -23,9 +23,9 @@ public class UserService {
     private  final JwtTokenProvider jwtTokenProvider;
 
     // 아이디 중복 확인
-    public void confirmID(String userID){
-        if(userRepository.existsById(userID)){
-            throw new ErrorException("같은 아이디가 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+    public void confirmEmail(String userEmail){
+        if(userRepository.existsByEmail(userEmail)){
+            throw new ErrorException("같은 이메일이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
     }
 
@@ -51,16 +51,16 @@ public class UserService {
         }
         user.setUserRole(UserRole.User);
         userRepository.save(user);
-        this.setJwtTokenInHeader(user.getId(), user.getUserRole(), httpServletResponse);
+        this.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
     }
 
     // 로그인
     public UserLoginResponse login(UserLoginRequest userLoginRequest, HttpServletResponse httpServletResponse){
         // 아이디가 존재하지 않으면
-        if(!userRepository.existsById(userLoginRequest.getId())){
-            return UserLoginResponse.res("400", "로그인 실패 / 아이디 없음");
+        if(!userRepository.existsByEmail(userLoginRequest.getEmail())){
+            return UserLoginResponse.res("400", "로그인 실패 / 이메일 없음");
         }
-        User user = userRepository.findById(userLoginRequest.getId()).orElseThrow();
+        User user = userRepository.findByEmail(userLoginRequest.getEmail()).orElseThrow();
 
         // 비밀번호 틀리면
         if(!passwordEncoder.matches(userLoginRequest.getPassword(), user.getPassword())){
@@ -70,14 +70,14 @@ public class UserService {
         if(!user.isSecondConfirmed()){
             return UserLoginResponse.res("403", "로그인 실패 / 2차 인증 안됨");
         }
-        this.setJwtTokenInHeader(userLoginRequest.getId(), user.getUserRole(), httpServletResponse);
+        this.setJwtTokenInHeader(userLoginRequest.getEmail(), user.getUserRole(), httpServletResponse);
         return UserLoginResponse.res("200", "로그인 성공");
     }
 
     // 유저 정보 보여주기
     public UserViewResponse viewUser(HttpServletRequest httpServletRequest){
         User user = this.findUserByToken(httpServletRequest);
-        return  UserViewResponse.res(user.getId(), user.getNickname(), user.getEmail());
+        return  UserViewResponse.res(user.getAddress(), user.getNickname(), user.getEmail());
     }
 
     // 유저 정보 수정
@@ -97,10 +97,10 @@ public class UserService {
     // 유저 탈퇴
     public UserDeleteResponse userDelete(UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest){
         // 유저의 아이디가 존재하지 않으면
-        if(!userRepository.existsById(userDeleteRequest.getId())){
-            return UserDeleteResponse.res("401", "유저 아이디가 없음.");
+        if(!userRepository.existsByEmail(userDeleteRequest.getEmail())){
+            return UserDeleteResponse.res("401", "유저 이메일이 없음.");
         }
-        User user = userRepository.findById(userDeleteRequest.getId()).orElseThrow();
+        User user = userRepository.findByEmail(userDeleteRequest.getEmail()).orElseThrow();
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return UserDeleteResponse.res("401", "비밀번호가 틀림");
         }
@@ -110,18 +110,18 @@ public class UserService {
     }
 
     // 토큰 헤더에 저장
-    public void setJwtTokenInHeader(String id, UserRole userRole, HttpServletResponse response) {
-        String accessToken = jwtTokenProvider.createAccessToken(id, userRole);
-        String refreshToken = jwtTokenProvider.createRefreshToken(id, userRole);
+    public void setJwtTokenInHeader(String email, UserRole userRole, HttpServletResponse response) {
+        String accessToken = jwtTokenProvider.createAccessToken(email, userRole);
+        String refreshToken = jwtTokenProvider.createRefreshToken(email, userRole);
 
         jwtTokenProvider.setHeaderAccessToken(response, accessToken);
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
     }
 
-    // 토큰에서 정보 가져오기
+    // 토큰에서 유저 정보 가져오기
     public User findUserByToken(HttpServletRequest request) {
-        String id = jwtTokenProvider.getUserId(jwtTokenProvider.resolveAccessToken(request));
-        return userRepository.findById(id).orElseThrow();
+        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
+        return userRepository.findByEmail(email).orElseThrow();
     }
 
 }

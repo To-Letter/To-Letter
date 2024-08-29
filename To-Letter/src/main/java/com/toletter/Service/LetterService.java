@@ -31,7 +31,7 @@ public class LetterService {
     public void sendLetter(SendLetterRequest sendLetterRequest, HttpServletRequest httpServletRequest){
         Letter letter = sendLetterRequest.toEntity();
         User fromUser = userService.findUserByToken(httpServletRequest); // 보내는 유저
-        User toUser = userRepository.findById((letter.getToUserId())).orElseThrow(); // 받는 유저
+        User toUser = userRepository.findByNickname((letter.getToUserNickname())).orElseThrow(() -> new ErrorException("유저 없음.", ErrorCode.FORBIDDEN_EXCEPTION)); // 받는 유저
 
         Map fromUserGPS = gpsService.getGpsUrl(fromUser.getAddress()); // 보내는 유저 위도 경도 구함
         Map toUserGPS = gpsService.getGpsUrl(toUser.getAddress()); // 받는 유저 위도 경도 구함
@@ -46,7 +46,7 @@ public class LetterService {
         LocalDateTime arrivedTime = this.getReceivedTime(gps);
 
         // 메일 db 저장
-        letter.setFromUserId(fromUser.getId());
+        letter.setFromUserNickname(fromUser.getNickname());
         letter.setArrivedAt(arrivedTime);
         letter.setViewCheck(false);
         letter.setTemporaryStorage(false);
@@ -54,14 +54,14 @@ public class LetterService {
 
         // 보낸 메일함에 저장
         SaveSentBox saveBoxDTO = new SaveSentBox();
-        saveBoxDTO.setFromUserId(fromUser.getId());
+        saveBoxDTO.setFromUserNickname(fromUser.getNickname());
         saveBoxDTO.setSentTime(letter.getCreatedAt());
         saveBoxDTO.setLetter(letter);
         sentBoxRepository.save(saveBoxDTO.toEntity());
 
         // 받는 메일함에 저장
         SaveReceivedBox saveReceivedBox = new SaveReceivedBox();
-        saveReceivedBox.setToUserId(letter.getToUserId());
+        saveReceivedBox.setToUserNickname(toUser.getNickname());
         saveReceivedBox.setReceivedTime(arrivedTime);
         saveReceivedBox.setLetter(letter);
         receivedBoxRepository.save(saveReceivedBox.toEntity());
@@ -74,8 +74,8 @@ public class LetterService {
 
         User user = userService.findUserByToken(httpServletRequest);
 
-        List<Letter> listBox = receivedBoxRepository.findAllByReceivedTimeBeforeAndUserID(now, user.getId());
-        return ReceivedLetterResponse.res(user.getId(), listBox);
+        List<Letter> listBox = receivedBoxRepository.findAllByReceivedTimeBeforeAndUserNickname(now, user.getNickname());
+        return ReceivedLetterResponse.res(user.getNickname(), listBox);
     }
 
     // 거리에 따른 메일 도착 시간

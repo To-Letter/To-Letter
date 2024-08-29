@@ -40,7 +40,6 @@ public class EmailService {
                 key.append(random.nextInt(10)); // 숫자
             }
         }
-        System.out.println(key);
         return  key.toString();
     }
 
@@ -69,7 +68,7 @@ public class EmailService {
     }
 
     // 데베에 저장
-    public void saveDB(String email, String randomCode) throws Exception {
+    public void saveDB(String email, String randomCode) {
         if(authRepository.existsByEmail(email)){
             throw new ErrorException("이미 인증 메일을 보냈습니다.", ErrorCode.NOT_FOUND_EXCEPTION);
         }
