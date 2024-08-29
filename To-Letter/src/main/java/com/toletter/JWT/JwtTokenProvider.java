@@ -43,17 +43,17 @@ public class JwtTokenProvider {
     }
 
     // Access Token 생성.
-    public String createAccessToken(String id,  UserRole userRole) {
-        return this.createToken(id, userRole, accessTokenValidTime);
+    public String createAccessToken(String email,  UserRole userRole) {
+        return this.createToken(email, userRole, accessTokenValidTime);
     }
     // Refresh Token 생성.
-    public String createRefreshToken(String id, UserRole userRole) {
-        return this.createToken(id, userRole, refreshTokenValidTime);
+    public String createRefreshToken(String email, UserRole userRole) {
+        return this.createToken(email, userRole, refreshTokenValidTime);
     }
 
     // Create token
-    public String createToken(String id, UserRole userRole, long tokenValid) {
-        Claims claims = Jwts.claims().setSubject(id); // claims 생성 및 payload 설정
+    public String createToken(String email, UserRole userRole, long tokenValid) {
+        Claims claims = Jwts.claims().setSubject(email); // claims 생성 및 payload 설정
         claims.put("roles", userRole.toString()); // 권한 설정, key/ value 쌍으로 저장
 
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -69,12 +69,12 @@ public class JwtTokenProvider {
 
     // JWT 토큰에서 인증 정보 조회
     public UsernamePasswordAuthenticationToken getAuthentication(String token) {
-        UserDetails userDetails = customUserDetailService.loadUserByUsername(this.getUserId(token));
+        UserDetails userDetails = customUserDetailService.loadUserByUsername(this.getUserEmail(token));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
     // 토큰에서 회원 정보 추출
-    public String getUserId(String token) {
+    public String getUserEmail(String token) {
         JwtParser jwtParser = Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
                 .build();
@@ -95,14 +95,14 @@ public class JwtTokenProvider {
 
     // accessToken 재발행
     public String reissueAccessToken(String refreshToken) throws ParseException {
-        String id = this.getUserId(refreshToken);
-        if (id == null) {
+        String email = this.getUserEmail(refreshToken);
+        if (email == null) {
             throw new ErrorException("401", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         String token = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(refreshToken)
                 .getBody().get("token", String.class);
 
-        return createAccessToken(id, userRepository.findById(id).get().getUserRole());
+        return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
     }
 
     // Request의 Header에서 AccessToken 값을 가져옵니다. "authorization" : "token"

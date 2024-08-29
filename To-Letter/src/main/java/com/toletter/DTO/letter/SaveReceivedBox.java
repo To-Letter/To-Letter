@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Data
 @RequiredArgsConstructor
 public class SaveReceivedBox {
-    @ApiModelProperty(value = "받는 유저 아이디")
-    private String toUserId;
+    @ApiModelProperty(value = "받는 유저 닉네임")
+    private String toUserNickname;
 
     @ApiModelProperty(value = "메일 도착할 시간", example = "2024-03-04T14:02:10")
     private LocalDateTime receivedTime;
@@ -23,7 +23,7 @@ public class SaveReceivedBox {
 
     public ReceivedBox toEntity() {
         return ReceivedBox.builder()
-                .user_id(toUserId)
+                .user_nickname(toUserNickname)
                 .receivedTime(receivedTime)
                 .letter(letter)
                 .build();

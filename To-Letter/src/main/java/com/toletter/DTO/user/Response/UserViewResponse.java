@@ -7,20 +7,20 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UserViewResponse {
-    @Schema(description = "아이디")
-    private String id;
-
     @Schema(description = "닉네임")
     private String nickname;
 
     @Schema(description = "이메일")
     private String email;
 
-    public static UserViewResponse res(String id, String nickname, String email) {
+    @Schema(description = "주소")
+    private String address;
+
+    public static UserViewResponse res(String address, String nickname, String email) {
         return UserViewResponse.builder()
-                .id(id)
                 .nickname(nickname)
                 .email(email)
+                .address(address)
                 .build();
     }
 }

@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @Data
 @RequiredArgsConstructor
 public class SendLetterRequest {
-    @ApiModelProperty(value = "받는 유저 아이디")
-    private String toUserId;
+    @ApiModelProperty(value = "받는 유저 닉네임")
+    private String toUserNickname;
 
     @ApiModelProperty(value = "제목")
     private String title;
@@ -21,7 +21,7 @@ public class SendLetterRequest {
 
     public Letter toEntity() {
         return Letter.builder()
-                .toUserId(toUserId)
+                .toUserNickname(toUserNickname)
                 .title(title)
                 .contents(contents)
                 .build();
