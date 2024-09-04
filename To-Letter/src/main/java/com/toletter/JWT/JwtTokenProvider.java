@@ -146,15 +146,15 @@ public class JwtTokenProvider {
 
             return !claims.getBody().getExpiration().before(new Date());
         } catch (MalformedJwtException e) {
-            throw new MalformedJwtException("Invalid JWT token", e);
+            throw new JwtException("유효하지 않은 토큰");
         } catch (ExpiredJwtException e) {
-            throw new ErrorException("토큰 만료", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new JwtException("토큰 만료");
         } catch (UnsupportedJwtException e) {
-            throw new UnsupportedJwtException("JWT token is unsupported", e);
+            throw new JwtException("지원되지 않는 토큰");
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("JWT claims string is empty", e);
+            throw new JwtException("토큰 문자열이 없음");
         } catch (SignatureException e) {
-            throw new SignatureException("JWT signature verification failed", e);
+            throw new JwtException("서명 검증에 실패함.");
         }
     }
 
