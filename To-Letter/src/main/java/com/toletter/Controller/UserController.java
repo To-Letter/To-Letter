@@ -5,6 +5,7 @@ import com.toletter.DTO.auth.Response.EmailVerifyResponse;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
 import com.toletter.Service.EmailService;
+import com.toletter.Service.Jwt.RedisJwtService;
 import com.toletter.Service.KakaoService;
 import com.toletter.Service.UserService;
 import io.swagger.annotations.*;
@@ -23,6 +24,12 @@ public class UserController {
     private final UserService userService;
     private final EmailService emailService;
     private final KakaoService kakaoService;
+    private final RedisJwtService redisJwtService;
+
+    @PostMapping("/su/test")
+    public String test(@RequestParam String email){
+        return redisJwtService.getValues(email);
+    }
 
     // 이메일 중복 확인
     @ApiResponses( value ={
