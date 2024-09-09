@@ -26,21 +26,25 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
 
         String token = jwtTokenProvider.resolveAccessToken(request);
+        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
-        if(token == null){
-            String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-            if (jwtTokenProvider.validateToken(refreshToken)) {
-                try {
+        if(token != null ){ //  accessToken 있으면
+            if(jwtTokenProvider.validateToken(token)){ // accessToken 검증
+                this.setAuthentication(token);
+            } else { // accessToken 검증 실패 시
+                if(jwtTokenProvider.validateToken(refreshToken)){ // refreshToken 검증
                     token = jwtTokenProvider.reissueAccessToken(refreshToken);
-                } catch (org.json.simple.parser.ParseException e) {
-                    throw new RuntimeException(e);
+                    jwtTokenProvider.setHeaderAccessToken(response, token);
+                    this.setAuthentication(token);
+                    jwtTokenProvider.validateToken(token);
                 }
+            }
+        } else { // accessToken 없으면
+            if(jwtTokenProvider.validateToken(refreshToken)){ // refreshToken 검증
+                token = jwtTokenProvider.reissueAccessToken(refreshToken);
                 jwtTokenProvider.setHeaderAccessToken(response, token);
                 this.setAuthentication(token);
-            }
-        } else if(token != null){
-            if(jwtTokenProvider.validateToken(token)){
-                this.setAuthentication(token);
+                jwtTokenProvider.validateToken(token);
             }
         }
         filterChain.doFilter(request, response);
