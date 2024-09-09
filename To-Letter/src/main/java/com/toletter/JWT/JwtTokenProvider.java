@@ -4,10 +4,10 @@ import com.toletter.Enums.UserRole;
 import com.toletter.Repository.UserRepository;
 import com.toletter.Error.*;
 import com.toletter.Service.Jwt.CustomUserDetailService;
+import com.toletter.Service.Jwt.RedisJwtService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +25,7 @@ import java.util.*;
 public class JwtTokenProvider {
     private final UserRepository userRepository;
     private final CustomUserDetailService customUserDetailService;
-
+    private final RedisJwtService redisJwtService;
     // 키
     @Value("${jwt.secret}")
     private String secretKey;
@@ -94,13 +94,11 @@ public class JwtTokenProvider {
     }
 
     // accessToken 재발행
-    public String reissueAccessToken(String refreshToken) throws ParseException {
+    public String reissueAccessToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
         if (email == null) {
             throw new ErrorException("401", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
-        String token = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(refreshToken)
-                .getBody().get("token", String.class);
 
         return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
     }
@@ -131,7 +129,7 @@ public class JwtTokenProvider {
         Date expiration = claims.getExpiration();
         Date now = new Date();
         if (now.after(expiration)) {
-            // 토큰 만료 시 해당 데이터 삭제 -> 아직 h2 데이터베이스 연결안함.
+            redisJwtService.deleteValues(this.getUserEmail(token));
         }
     }
 
