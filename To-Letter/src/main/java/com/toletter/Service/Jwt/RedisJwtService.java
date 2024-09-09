@@ -18,17 +18,17 @@ public class RedisJwtService {
     // refreshToken, email 설정
     public void setValues(String email, String token){
         ValueOperations<String, String> operations = redisTemplate.opsForValue();
-        operations.set(email, token, Duration.ofMillis(1)); // 테스트 상 1분으로 했지만 그 후에는 7일로 할 예정
+        operations.set(email, token, Duration.ofMillis(86400000)); // 만료 1일
     }
     
     // 키 값으로 값 가져오기
     public String getValues(String email){
         ValueOperations<String, String> operations = redisTemplate.opsForValue();
         String token = operations.get(email);
-        if(token.isEmpty()){
-            return null;
+        if (token != null && !token.isEmpty()) {
+            return token;
         }
-        return token;
+        return null;
     }
 
     // 삭제

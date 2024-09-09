@@ -107,6 +107,7 @@ public class UserService {
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return UserDeleteResponse.res("401", "비밀번호가 틀림");
         }
+        redisJwtService.deleteValues(userDeleteRequest.getEmail());
         jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
         userRepository.delete(user);
         return UserDeleteResponse.res("200", "탈퇴 성공");
