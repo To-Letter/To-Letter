@@ -8,6 +8,7 @@ import com.toletter.Enums.UserRole;
 import com.toletter.Error.*;
 import com.toletter.JWT.*;
 import com.toletter.Repository.*;
+import com.toletter.Service.Jwt.RedisJwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private  final JwtTokenProvider jwtTokenProvider;
+    private final RedisJwtService redisJwtService;
 
     // 아이디 중복 확인
     public void confirmEmail(String userEmail){
@@ -91,6 +93,7 @@ public class UserService {
 
     // 로그아웃
     public void logout(HttpServletRequest httpServletRequest){
+        redisJwtService.deleteValues(findUserByToken(httpServletRequest).getEmail());
         jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
     }
 
@@ -104,6 +107,7 @@ public class UserService {
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return UserDeleteResponse.res("401", "비밀번호가 틀림");
         }
+        redisJwtService.deleteValues(userDeleteRequest.getEmail());
         jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
         userRepository.delete(user);
         return UserDeleteResponse.res("200", "탈퇴 성공");
@@ -116,6 +120,7 @@ public class UserService {
 
         jwtTokenProvider.setHeaderAccessToken(response, accessToken);
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
+        redisJwtService.setValues(email, refreshToken);
     }
 
     // 토큰에서 유저 정보 가져오기
