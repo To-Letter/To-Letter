@@ -24,12 +24,6 @@ public class UserController {
     private final UserService userService;
     private final EmailService emailService;
     private final KakaoService kakaoService;
-    private final RedisJwtService redisJwtService;
-
-    @PostMapping("/su/test")
-    public String test(@RequestParam String email){
-        return redisJwtService.getValues(email);
-    }
 
     // 이메일 중복 확인
     @ApiResponses( value ={
@@ -53,6 +47,19 @@ public class UserController {
     public ResponseEntity<String> confirmNickname(@RequestParam String userNickname) {
         userService.confirmNickname(userNickname);
         return ResponseEntity.ok("닉네임 중복 없음.");
+    }
+
+    // 회원가입
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "토큰 재발급 완료"),
+            @ApiResponse(code = 401, message = "토큰이 만료됨"),
+            @ApiResponse(code = 404, message = "유저가 존재하지 않음")
+    })
+    @ApiOperation(value = "토큰 재발급", notes = "accessToken 만료 시 accessToken 없이 refreshToken만 header에 넣고 보내 refreshToken 검증 후 토큰 재발급")
+    @GetMapping("/reissue")
+    public ResponseEntity<String> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+        userService.reissueToken(request, response);
+        return ResponseEntity.ok("토큰 재발급이 완료되었습니다");
     }
 
     // 회원가입

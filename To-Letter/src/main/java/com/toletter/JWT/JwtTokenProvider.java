@@ -1,5 +1,6 @@
 package com.toletter.JWT;
 
+import com.toletter.Entity.User;
 import com.toletter.Enums.UserRole;
 import com.toletter.Repository.UserRepository;
 import com.toletter.Error.*;
@@ -97,10 +98,32 @@ public class JwtTokenProvider {
     public String reissueAccessToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
         if (email == null) {
-            throw new ErrorException("401", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("유저가 존재하지 않습니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
         return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
+    }
+
+    // refreshToken 재발급
+    public String reissueRefreshToken(String refreshToken) {
+        String email = this.getUserEmail(refreshToken);
+
+        if (redisJwtService.isValid(email)) {
+            throw new ErrorException("다시 로그인하세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new ErrorException("유저가 존재하지 않습니다.", ErrorCode.NOT_FOUND_EXCEPTION);
+        }
+
+        String newRefreshToken = createRefreshToken(email, user.get().getUserRole());
+
+        redisJwtService.deleteValues(email);
+        redisJwtService.setValues(email, newRefreshToken);
+
+        return newRefreshToken;
     }
 
     // Request의 Header에서 AccessToken 값을 가져옵니다. "authorization" : "token"
@@ -135,25 +158,9 @@ public class JwtTokenProvider {
 
     // 토큰의 유효성 + 만료일자 확인
     public boolean validateToken(String jwtToken) {
-        try {
-            Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-            Jws<Claims> claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(jwtToken);
-
-            return !claims.getBody().getExpiration().before(new Date());
-        } catch (MalformedJwtException e) {
-            throw new JwtException("유효하지 않은 토큰");
-        } catch (ExpiredJwtException e) {
-            throw new JwtException("토큰 만료");
-        } catch (UnsupportedJwtException e) {
-            throw new JwtException("지원되지 않는 토큰");
-        } catch (IllegalArgumentException e) {
-            throw new JwtException("토큰 문자열이 없음");
-        } catch (SignatureException e) {
-            throw new JwtException("서명 검증에 실패함.");
-        }
+        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwtToken);
+        return true;
     }
 
     // 어세스 토큰 헤더 설정

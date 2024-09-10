@@ -6,9 +6,6 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +26,11 @@ public class RedisJwtService {
             return token;
         }
         return null;
+    }
+
+    // 키 값으로 값이 존재하는지 확인
+    public boolean isValid(String email){
+        return redisTemplate.hasKey(email);
     }
 
     // 삭제

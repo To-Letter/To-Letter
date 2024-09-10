@@ -1,5 +1,10 @@
 package com.toletter.JWT;
 
+import com.toletter.Enums.JwtErrorCode;
+import io.jsonwebtoken.ExpiredJwtException;
+import org.json.simple.JSONObject;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,26 +33,56 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String token = jwtTokenProvider.resolveAccessToken(request);
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
-        if(token != null ){ //  accessToken 있으면
-            if(jwtTokenProvider.validateToken(token)){ // accessToken 검증
-                this.setAuthentication(token);
-            } else { // accessToken 검증 실패 시
-                if(jwtTokenProvider.validateToken(refreshToken)){ // refreshToken 검증
+        try {
+            if(token != null ){ //  accessToken 있으면
+                if(jwtTokenProvider.validateToken(token)){ // accessToken 검증
+                    this.setAuthentication(token);
+                } else { // accessToken 검증 실패 시
+                    if(jwtTokenProvider.validateToken(refreshToken)){ // refreshToken 검증
+                        token = jwtTokenProvider.reissueAccessToken(refreshToken);
+                        jwtTokenProvider.setHeaderAccessToken(response, token);
+                        this.setAuthentication(token);
+                        jwtTokenProvider.validateToken(token);
+                    }
+                }
+            } else { // accessToken 없으면
+                if(jwtTokenProvider.validateToken(refreshToken) && path.contains("/users/reissue")){ // refreshToken 검증
                     token = jwtTokenProvider.reissueAccessToken(refreshToken);
                     jwtTokenProvider.setHeaderAccessToken(response, token);
                     this.setAuthentication(token);
                     jwtTokenProvider.validateToken(token);
                 }
             }
-        } else { // accessToken 없으면
-            if(jwtTokenProvider.validateToken(refreshToken)){ // refreshToken 검증
-                token = jwtTokenProvider.reissueAccessToken(refreshToken);
-                jwtTokenProvider.setHeaderAccessToken(response, token);
-                this.setAuthentication(token);
-                jwtTokenProvider.validateToken(token);
-            }
+        } catch (SecurityException | MalformedJwtException e) {
+            setErrorResponse(response, JwtErrorCode.INVALID_TOKEN);
+            return;
+        } catch (ExpiredJwtException e) {
+            setErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN);
+            return;
+        } catch (UnsupportedJwtException e) {
+            setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN);
+            return;
+        } catch (IllegalArgumentException e) {
+            setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN);
+            return;
+        } catch (Exception e) {
+            setErrorResponse(response, JwtErrorCode.WRONG_TOKEN);
+            return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    // 에러처리
+    public void setErrorResponse(HttpServletResponse response, JwtErrorCode code) throws IOException {
+        JSONObject json = new JSONObject();
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        json.put("code", code.getCode());
+        json.put("message", code.getMessage());
+
+        response.getWriter().print(json);
+        response.getWriter().flush();
     }
 
 
