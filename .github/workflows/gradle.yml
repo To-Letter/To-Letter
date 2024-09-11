@@ -41,7 +41,7 @@ jobs:
         docker build -t ${{ secrets.DOCKER_REPO }} ./To-Letter
         docker push ${{ secrets.DOCKER_REPO }}
 
-    ## docker container, images 삭제 후 ec2 접속, docker 이미지 풀 받고 서버 실행
+    ## docker container, images 삭제 후 ec2 접속, docker 이미지 풀 받고 서버 실행, redis 실행
     - name: Executing remote SSH commands using password
       uses: appleboy/ssh-action@v0.1.6
       with:
@@ -55,3 +55,4 @@ jobs:
           sudo docker rmi $(sudo docker images -q)
           sudo docker pull ${{ secrets.DOCKER_REPO }} 
           sudo docker run -d -p 3000:3000 ${{ secrets.DOCKER_REPO }}
+          sudo docker run -d -p 6379:6379 --name redis redis
