@@ -2,7 +2,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "feature/redisLinkServer" ]
+    branches: [ "develop" ]
 
 jobs:
   build:
@@ -41,7 +41,7 @@ jobs:
         docker build -t ${{ secrets.DOCKER_REPO }} ./To-Letter
         docker push ${{ secrets.DOCKER_REPO }}
 
-    ## docker container, images 삭제 후 ec2 접속, docker 이미지 풀 받고 서버 실행, redis 실
+    ## docker container, images 삭제 후 ec2 접속, docker 이미지 풀 받고 서버 실행, redis 실행
     - name: Executing remote SSH commands using password
       uses: appleboy/ssh-action@v0.1.6
       with:
