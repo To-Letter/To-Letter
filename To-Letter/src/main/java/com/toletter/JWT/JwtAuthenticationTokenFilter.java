@@ -34,23 +34,23 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
         try {
-            if(token != null ){ //  accessToken 있으면
-                if(jwtTokenProvider.validateToken(token)){ // accessToken 검증
-                    this.setAuthentication(token);
-                } else { // accessToken 검증 실패 시
-                    if(jwtTokenProvider.validateToken(refreshToken)){ // refreshToken 검증
-                        token = jwtTokenProvider.reissueAccessToken(refreshToken);
-                        jwtTokenProvider.setHeaderAccessToken(response, token);
+            if(jwtTokenProvider.validateToken(refreshToken) && path.contains("/users/reissue")){
+                token = jwtTokenProvider.reissueAccessToken(refreshToken);
+                jwtTokenProvider.setHeaderAccessToken(response, token);
+                this.setAuthentication(token);
+                jwtTokenProvider.validateToken(token);
+            } else {
+                if(token != null ){ //  accessToken 있으면
+                    if(jwtTokenProvider.validateToken(token)){ // accessToken 검증
                         this.setAuthentication(token);
-                        jwtTokenProvider.validateToken(token);
+                    } else { // accessToken 검증 실패 시
+                        if(jwtTokenProvider.validateToken(refreshToken)){ // refreshToken 검증
+                            token = jwtTokenProvider.reissueAccessToken(refreshToken);
+                            jwtTokenProvider.setHeaderAccessToken(response, token);
+                            this.setAuthentication(token);
+                            jwtTokenProvider.validateToken(token);
+                        }
                     }
-                }
-            } else { // accessToken 없으면
-                if(jwtTokenProvider.validateToken(refreshToken) && path.contains("/users/reissue")){ // refreshToken 검증
-                    token = jwtTokenProvider.reissueAccessToken(refreshToken);
-                    jwtTokenProvider.setHeaderAccessToken(response, token);
-                    this.setAuthentication(token);
-                    jwtTokenProvider.validateToken(token);
                 }
             }
         } catch (SecurityException | MalformedJwtException e) {
