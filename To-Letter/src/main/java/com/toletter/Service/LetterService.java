@@ -49,7 +49,6 @@ public class LetterService {
         letter.setFromUserNickname(fromUser.getNickname());
         letter.setArrivedAt(arrivedTime);
         letter.setViewCheck(false);
-        letter.setTemporaryStorage(false);
         letterRepository.save(letter);
 
         // 보낸 메일함에 저장

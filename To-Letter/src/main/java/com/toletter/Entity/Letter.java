@@ -47,8 +47,4 @@ public class Letter {
 
     @ApiModelProperty(value = "메일 읽었는지 확인", example = "T / F")
     private Boolean viewCheck;
-
-    @ApiModelProperty(value = "임시저장", example = "T / F")
-    @Column(nullable = false)
-    private Boolean temporaryStorage;
 }
