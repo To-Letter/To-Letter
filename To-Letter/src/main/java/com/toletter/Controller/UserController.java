@@ -29,7 +29,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "이메일 중복 없음"),
             @ApiResponse(code = 401, message = "같은 이메일 존재")
     })
-    @ApiOperation(value = "이메일 중복 확인")
+    @ApiOperation(value = "이메일 중복 확인", notes = "토큰 필요 없음")
     @PostMapping("/su/confirmEmail")
     public ResponseEntity<String> confirmEmail(@RequestParam String userEmail) {
         userService.confirmEmail(userEmail);
@@ -41,7 +41,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "닉네임 중복 없음"),
             @ApiResponse(code = 401, message = "같은 닉네임 존재")
     })
-    @ApiOperation(value = "닉네임 중복 확인")
+    @ApiOperation(value = "닉네임 중복 확인", notes = "토큰 필요 없음")
     @PostMapping("/su/confirmNickname")
     public ResponseEntity<String> confirmNickname(@RequestParam String userNickname) {
         userService.confirmNickname(userNickname);
@@ -51,8 +51,15 @@ public class UserController {
     // 토큰 재발급
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "토큰 재발급 완료"),
-            @ApiResponse(code = 401, message = "토큰이 만료됨"),
-            @ApiResponse(code = 404, message = "유저가 존재하지 않음")
+            @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
+            @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
+            @ApiResponse(code = 1003, message = "만료된 토큰"),
+            @ApiResponse(code = 1004, message = "변조된 토큰"),
+            @ApiResponse(code = 1005, message = "잘못된 접근")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "response", value = "HttpServletResponse", required = true, dataType = "HttpServletResponse", paramType = "body"),
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "토큰 재발급", notes = "accessToken 만료 시 accessToken 없이 refreshToken만 header에 넣고 보내 refreshToken 검증 후 토큰 재발급")
     @GetMapping("/reissue")
@@ -79,6 +86,10 @@ public class UserController {
             @ApiResponse(code = 400, message = "이메일 존재안함"),
             @ApiResponse(code = 401, message = "비밀번호 틀림"),
             @ApiResponse(code = 403, message = "2차 인증 안됨")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "response", value = "HttpServletResponse", required = true, dataType = "HttpServletResponse", paramType = "body"),
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "유저 로그인", notes = "토큰 필요 없음")
     @PostMapping("/su/login")
@@ -124,6 +135,9 @@ public class UserController {
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "유저 정보 수정 성공"),
     })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+    })
     @ApiOperation(value = "유저 정보 수정")
     @PutMapping("/update")
     public UserUpdateResponse updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest) {
@@ -133,6 +147,9 @@ public class UserController {
     // 로그아웃
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "로그아웃 성공"),
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "로그아웃")
     @GetMapping("/logout")
@@ -160,7 +177,7 @@ public class UserController {
     })
     @ApiOperation(value = "2차 인증 검증")
     @PostMapping("/email/verify")
-    public EmailVerifyResponse emailVerify(@RequestBody EmailVerifyRequest emailVerifyRequest) throws Exception {
+    public EmailVerifyResponse emailVerify(@RequestBody EmailVerifyRequest emailVerifyRequest) {
         return emailService.verifyEmail(emailVerifyRequest);
     }
 
@@ -168,6 +185,9 @@ public class UserController {
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "탈퇴 성공"),
             @ApiResponse(code = 401, message = "탈퇴 실패 / 비밀번호 틀림 / 유저 이메일이 없음")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "유저 탈퇴")
     @DeleteMapping("/delete")
