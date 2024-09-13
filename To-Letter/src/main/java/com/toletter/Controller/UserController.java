@@ -58,13 +58,11 @@ public class UserController {
             @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "response", value = "HttpServletResponse", required = true, dataType = "HttpServletResponse", paramType = "body"),
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
-    @ApiOperation(value = "토큰 재발급", notes = "accessToken 만료 시 accessToken 없이 refreshToken만 header에 넣고 보내 refreshToken 검증 후 토큰 재발급")
+    @ApiOperation(value = "토큰 재발급", notes = "accessToken 만료 시 refreshToken 검증 후 토큰 재발급")
     @GetMapping("/reissue")
-    public ResponseEntity<String> reissueToken(HttpServletRequest request, HttpServletResponse response) {
-        userService.reissueToken(request, response);
+    public ResponseEntity<String> reissueToken() {
         return ResponseEntity.ok("토큰 재발급이 완료되었습니다");
     }
 

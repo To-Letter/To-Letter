@@ -38,17 +38,6 @@ public class UserService {
         }
     }
 
-    // 토큰 재발급
-    public void reissueToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-
-        String newAccessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
-        String newRefreshToken = jwtTokenProvider.reissueRefreshToken(refreshToken);
-
-        jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
-        jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
-    }
-
     // 회원가입
     @Transactional
     public void signup(UserSignupRequest userSignupRequest){

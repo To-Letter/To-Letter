@@ -34,11 +34,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
         try {
+            // accessToken 만료 시, refreshToken 검증 및 재발급 경로를 통하여 token 재발급
             if(jwtTokenProvider.validateToken(refreshToken) && path.contains("/users/reissue")){
-                token = jwtTokenProvider.reissueAccessToken(refreshToken);
-                jwtTokenProvider.setHeaderAccessToken(response, token);
-                this.setAuthentication(token);
-                jwtTokenProvider.validateToken(token);
+                String newAccessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
+                String newRefreshToken = jwtTokenProvider.reissueRefreshToken(refreshToken);
+
+                jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
+                jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
             } else {
                 if(token != null ){ //  accessToken 있으면
                     if(jwtTokenProvider.validateToken(token)){ // accessToken 검증
@@ -54,32 +56,33 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 }
             }
         } catch (SecurityException | MalformedJwtException e) {
-            setErrorResponse(response, JwtErrorCode.INVALID_TOKEN);
+            setErrorResponse(response, JwtErrorCode.INVALID_TOKEN, e.getMessage());
             return;
         } catch (ExpiredJwtException e) {
-            setErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN);
+            setErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN, e.getMessage());
             return;
         } catch (UnsupportedJwtException e) {
-            setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN);
+            setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN, e.getMessage());
             return;
         } catch (IllegalArgumentException e) {
-            setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN);
+            setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN, e.getMessage());
             return;
         } catch (Exception e) {
-            setErrorResponse(response, JwtErrorCode.WRONG_TOKEN);
+            setErrorResponse(response, JwtErrorCode.WRONG_TOKEN, e.getMessage());
             return;
         }
         filterChain.doFilter(request, response);
     }
 
     // 에러처리
-    public void setErrorResponse(HttpServletResponse response, JwtErrorCode code) throws IOException {
+    public void setErrorResponse(HttpServletResponse response, JwtErrorCode code, String errorMessage) throws IOException {
         JSONObject json = new JSONObject();
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         json.put("code", code.getCode());
         json.put("message", code.getMessage());
+        json.put("error", errorMessage);
 
         response.getWriter().print(json);
         response.getWriter().flush();

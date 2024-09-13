@@ -108,7 +108,7 @@ public class JwtTokenProvider {
     public String reissueRefreshToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
 
-        if (redisJwtService.isValid(email)) {
+        if (!redisJwtService.isValid(email)) {
             throw new ErrorException("다시 로그인하세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
