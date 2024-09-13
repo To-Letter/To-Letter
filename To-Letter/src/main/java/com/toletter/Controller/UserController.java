@@ -5,7 +5,6 @@ import com.toletter.DTO.auth.Response.EmailVerifyResponse;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
 import com.toletter.Service.EmailService;
-import com.toletter.Service.Jwt.RedisJwtService;
 import com.toletter.Service.KakaoService;
 import com.toletter.Service.UserService;
 import io.swagger.annotations.*;
@@ -49,7 +48,7 @@ public class UserController {
         return ResponseEntity.ok("닉네임 중복 없음.");
     }
 
-    // 회원가입
+    // 토큰 재발급
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "토큰 재발급 완료"),
             @ApiResponse(code = 401, message = "토큰이 만료됨"),
@@ -69,8 +68,8 @@ public class UserController {
     })
     @ApiOperation(value = "유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/su/signup")
-    public ResponseEntity<String> userSignUp(@RequestBody UserSignupRequest userSignupRequest, HttpServletResponse response) {
-        userService.signup(userSignupRequest, response);
+    public ResponseEntity<String> userSignUp(@RequestBody UserSignupRequest userSignupRequest) {
+        userService.signup(userSignupRequest);
         return ResponseEntity.ok("회원가입 성공");
     }
 
