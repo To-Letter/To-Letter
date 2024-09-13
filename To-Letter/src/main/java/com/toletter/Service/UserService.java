@@ -38,21 +38,14 @@ public class UserService {
         }
     }
 
-    // 토큰 재발급
-    public void reissueToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
-
-        String newAccessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
-        String newRefreshToken = jwtTokenProvider.reissueRefreshToken(refreshToken);
-
-        jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
-        jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
-    }
-
     // 회원가입
     @Transactional
-    public void signup(UserSignupRequest userSignupRequest, HttpServletResponse httpServletResponse){
+    public void signup(UserSignupRequest userSignupRequest){
         User user = userSignupRequest.toEntity();
+
+        if(userRepository.existsByEmail(userSignupRequest.getEmail())){
+            throw new ErrorException("같은 이메일이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
 
         // 카카오 로그인인지 로컬 로그인인지 구분
         if(userSignupRequest.getLoginType().equals(LoginType.kakaoLogin)){
@@ -98,7 +91,7 @@ public class UserService {
         User user = this.findUserByToken(httpServletRequest);
         user.updateUser(userUpdateRequest);
         userRepository.save(user);
-        return UserUpdateResponse.res("200", "수정 완료",  user);
+        return UserUpdateResponse.res("200", "수정 완료",  user.getEmail(), user.getNickname(), user.getAddress());
     }
 
     // 로그아웃

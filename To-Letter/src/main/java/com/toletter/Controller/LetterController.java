@@ -20,6 +20,9 @@ public class LetterController {
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 보내기 성공"),
     })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+    })
     @ApiOperation(value = "메일 보내기")
     @PostMapping("/send")
     public ResponseEntity<String> sendLetter(@RequestBody SendLetterRequest sendLetterRequest, HttpServletRequest httpServletRequest) {
@@ -30,6 +33,9 @@ public class LetterController {
     // 메일 받기
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 받기 성공"),
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "메일 받기")
     @GetMapping("/receive")

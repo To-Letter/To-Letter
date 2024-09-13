@@ -108,7 +108,7 @@ public class JwtTokenProvider {
     public String reissueRefreshToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
 
-        if (redisJwtService.isValid(email)) {
+        if (!redisJwtService.isValid(email)) {
             throw new ErrorException("다시 로그인하세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
@@ -159,8 +159,12 @@ public class JwtTokenProvider {
     // 토큰의 유효성 + 만료일자 확인
     public boolean validateToken(String jwtToken) {
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwtToken);
-        return true;
+        Jws<Claims> claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(jwtToken);
+
+        return !claims.getBody().getExpiration().before(new Date());
     }
 
     // 어세스 토큰 헤더 설정

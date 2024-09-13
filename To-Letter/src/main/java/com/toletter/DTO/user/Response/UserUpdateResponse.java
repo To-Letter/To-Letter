@@ -14,12 +14,20 @@ public class UserUpdateResponse {
     @Schema(description = "메시지", example = "정상처리되었습니다.")
     private String responseMessage;
 
-    @Schema(description = "유저 정보")
-    private User user;
+    @Schema(description = "유저 정보(이메일)")
+    private String email;
 
-    public static UserUpdateResponse res(String responseCode, String responseMessage, User user) {
+    @Schema(description = "유저 정보(닉네임)")
+    private String nickname;
+
+    @Schema(description = "유저 정보(주소)")
+    private String address;
+
+    public static UserUpdateResponse res(String responseCode, String responseMessage, String email, String nickname, String address) {
         return UserUpdateResponse.builder()
-                .user(user)
+                .email(email)
+                .nickname(nickname)
+                .address(address)
                 .responseCode(responseCode)
                 .responseMessage(responseMessage)
                 .build();

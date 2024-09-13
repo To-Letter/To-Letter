@@ -35,7 +35,7 @@ public class EmailService {
 
         for (int i = 0; i < 6; i++) {
             if (random.nextBoolean()) { // 랜덤으로 true, false 리턴
-                key.append((char)((int)(random.nextInt(26)) + 97)); // 소문자
+                key.append((char)(random.nextInt(26) + 97)); // 소문자
             } else {
                 key.append(random.nextInt(10)); // 숫자
             }
@@ -79,16 +79,15 @@ public class EmailService {
     }
 
     // 2차 인증 검증
-    public EmailVerifyResponse verifyEmail(EmailVerifyRequest emailVerifyRequest) throws Exception {
+    public EmailVerifyResponse verifyEmail(EmailVerifyRequest emailVerifyRequest) {
         Auth auth = authRepository.findByEmail(emailVerifyRequest.getEmail()).orElseThrow();
 
         // 현재 시각 가져오기
         LocalDateTime currentDateTime = LocalDateTime.now();
 
-        // 10분 지나면 다시 보내기
-        if(currentDateTime.isAfter(auth.getCreatedDate().plusMinutes(10))){
+        // 이메일 인증 제한 시간 5분 지정
+        if(currentDateTime.isAfter(auth.getCreatedDate().plusMinutes(5))){
             authRepository.deleteByEmail(auth.getEmail());
-            this.sendEmail(emailVerifyRequest.getEmail());
             return EmailVerifyResponse.res("401","이메일 인증 실패 / 시간 초과");
         }
         if(!emailVerifyRequest.getRandomCode().equals(auth.getRandomCode())){
