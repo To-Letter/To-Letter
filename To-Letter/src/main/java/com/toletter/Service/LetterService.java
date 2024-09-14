@@ -26,6 +26,7 @@ public class LetterService {
     private final UserService userService;
     private final GPSService gpsService;
     private final UserRepository userRepository;
+    private final AlarmService alarmService;
 
     // 메일 보내기
     public void sendLetter(SendLetterRequest sendLetterRequest, HttpServletRequest httpServletRequest){
@@ -64,6 +65,9 @@ public class LetterService {
         saveReceivedBox.setReceivedTime(arrivedTime);
         saveReceivedBox.setLetter(letter);
         receivedBoxRepository.save(saveReceivedBox.toEntity());
+
+        // 알림 보내기
+        alarmService.send(toUser.getNickname(), letter);
     }
 
     // 메일 받기

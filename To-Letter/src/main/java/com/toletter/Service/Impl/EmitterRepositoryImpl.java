@@ -13,8 +13,8 @@ public class EmitterRepositoryImpl implements EmitterRepository {
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final Map<String, Object> eventCache = new ConcurrentHashMap<>();
 
-    public SseEmitter save(String email, SseEmitter emitter){
-        emitters.put(email, emitter);
+    public SseEmitter save(String nickname, SseEmitter emitter){
+        emitters.put(nickname, emitter);
         return emitter;
     }
 
@@ -23,16 +23,9 @@ public class EmitterRepositoryImpl implements EmitterRepository {
     }
 
 
-    public Map<String, SseEmitter> findAllEmitterStartWithByMemberId(String memberId) {
+    public Map<String, SseEmitter> findAllEmitterWithByMemberId(String nickname) {
         return emitters.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(memberId))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-
-    public Map<String, Object> findAllEventCacheStartWithByMemberId(String memberId) {
-        return eventCache.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(memberId))
+                .filter(entry -> entry.getKey().equals(nickname))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -41,21 +34,31 @@ public class EmitterRepositoryImpl implements EmitterRepository {
         emitters.remove(id);
     }
 
-    public void deleteAllEmitterStartWithId(String memberId) {
+    public void deleteAllEmitterWithId(String nickname) {
         emitters.forEach(
                 (key, emitter) -> {
-                    if (key.startsWith(memberId)) {
+                    if (key.equals(nickname)) {
                         emitters.remove(key);
                     }
                 }
         );
     }
 
-    public void deleteAllEventCacheStartWithId(String memberId) {
+    public void deleteAllEventCacheWithId(String nickname) {
         eventCache.forEach(
                 (key, emitter) -> {
-                    if (key.startsWith(memberId)) {
+                    if (key.equals(nickname)) {
                         eventCache.remove(key);
+                    }
+                }
+        );
+    }
+
+    public void disconnect(String nickname){
+        emitters.forEach(
+                (key, emitter) -> {
+                    if(key.equals(nickname)) {
+                        emitter.complete();
                     }
                 }
         );
