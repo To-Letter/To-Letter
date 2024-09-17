@@ -47,4 +47,8 @@ public class Letter {
 
     @ApiModelProperty(value = "메일 읽었는지 확인", example = "T / F")
     private Boolean viewCheck;
+
+    public void updateViewCheck(){
+        this.viewCheck = true;
+    }
 }

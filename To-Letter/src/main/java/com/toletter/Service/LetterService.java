@@ -70,7 +70,17 @@ public class LetterService {
         alarmService.send(toUser.getNickname(), letter);
     }
 
-    // 메일 받기
+    // 메일 읽기
+    public Letter openLetter(HttpServletRequest httpServletRequest, Long letterID){
+        User user = userService.findUserByToken(httpServletRequest);
+
+        Letter letter = receivedBoxRepository.findByLetter(letterID).orElseThrow();
+        letter.updateViewCheck();
+        letterRepository.save(letter);
+        return letter;
+    }
+
+    // 모든 메일함 열기
     public ReceivedLetterResponse receiveLetter(HttpServletRequest httpServletRequest){
         // 현재 시간
         LocalDateTime now = LocalDateTime.now();
@@ -79,6 +89,22 @@ public class LetterService {
 
         List<Letter> listBox = receivedBoxRepository.findAllByReceivedTimeBeforeAndUserNickname(now, user.getNickname());
         return ReceivedLetterResponse.res(user.getNickname(), listBox);
+    }
+
+    // 안 읽은 메일함 열기
+    public ReceivedLetterResponse receivedUnReadLetter(HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
+
+        List<Letter> unReadListBox = receivedBoxRepository.findByLetterIsReadFalse();
+        return ReceivedLetterResponse.res(user.getNickname(), unReadListBox);
+    }
+
+    // 읽은 메일함 열기
+    public ReceivedLetterResponse receivedReadLetter(HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
+
+        List<Letter> readListBox = receivedBoxRepository.findByLetterIsReadTrue();
+        return ReceivedLetterResponse.res(user.getNickname(), readListBox);
     }
 
     // 거리에 따른 메일 도착 시간
