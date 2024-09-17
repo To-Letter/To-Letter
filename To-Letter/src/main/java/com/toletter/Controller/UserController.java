@@ -87,7 +87,6 @@ public class UserController {
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "response", value = "HttpServletResponse", required = true, dataType = "HttpServletResponse", paramType = "body"),
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "유저 로그인", notes = "토큰 필요 없음")
     @PostMapping("/su/login")
@@ -122,6 +121,14 @@ public class UserController {
     // 마이페이지
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "유저 정보 전달 성공"),
+            @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
+            @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
+            @ApiResponse(code = 1003, message = "만료된 토큰"),
+            @ApiResponse(code = 1004, message = "변조된 토큰"),
+            @ApiResponse(code = 1005, message = "잘못된 접근")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "유저 정보 보여주기")
     @GetMapping("/mypage")
@@ -132,6 +139,11 @@ public class UserController {
     // 마이페이지 수정
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "유저 정보 수정 성공"),
+            @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
+            @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
+            @ApiResponse(code = 1003, message = "만료된 토큰"),
+            @ApiResponse(code = 1004, message = "변조된 토큰"),
+            @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
@@ -145,6 +157,11 @@ public class UserController {
     // 로그아웃
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "로그아웃 성공"),
+            @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
+            @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
+            @ApiResponse(code = 1003, message = "만료된 토큰"),
+            @ApiResponse(code = 1004, message = "변조된 토큰"),
+            @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
@@ -160,7 +177,7 @@ public class UserController {
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "2차 인증 메일 전송 성공"),
     })
-    @ApiOperation(value = "2차 인증")
+    @ApiOperation(value = "2차 인증", notes = "토큰 필요 없음")
     @PostMapping ("/email/auth")
     public ResponseEntity<String> emailAuth(@RequestParam String toEmail) throws Exception {
         emailService.sendEmail(toEmail);
@@ -173,7 +190,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "이메일 인증 실패 / 시간 초과 / 다시 보냄"),
             @ApiResponse(code = 403, message = "이메일 인증 실패 / 랜덤 코드 불일치")
     })
-    @ApiOperation(value = "2차 인증 검증")
+    @ApiOperation(value = "2차 인증 검증", notes = "토큰 필요 없음")
     @PostMapping("/email/verify")
     public EmailVerifyResponse emailVerify(@RequestBody EmailVerifyRequest emailVerifyRequest) {
         return emailService.verifyEmail(emailVerifyRequest);
@@ -182,7 +199,12 @@ public class UserController {
     // 유저 탈퇴
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "탈퇴 성공"),
-            @ApiResponse(code = 401, message = "탈퇴 실패 / 비밀번호 틀림 / 유저 이메일이 없음")
+            @ApiResponse(code = 401, message = "탈퇴 실패 / 비밀번호 틀림 / 유저 이메일이 없음"),
+            @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
+            @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
+            @ApiResponse(code = 1003, message = "만료된 토큰"),
+            @ApiResponse(code = 1004, message = "변조된 토큰"),
+            @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
