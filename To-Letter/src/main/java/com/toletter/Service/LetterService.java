@@ -47,7 +47,10 @@ public class LetterService {
         gps.setLon2((Double)toUserGPS.get("lon"));
 
         // 도착하는 시간 구함.
-        LocalDateTime arrivedTime = this.getReceivedTime(gps);
+        // 테스트 및 프론트 개발을 위해 1-5분으로 할 예정
+        LocalDateTime now = LocalDateTime.now();
+        int arrivedDay = this.getReceivedTime(gps);
+        LocalDateTime arrivedTime = now.plusMinutes(arrivedDay);
 
         // 메일 db 저장
         letter.setFromUserNickname(fromUser.getNickname());
@@ -70,7 +73,7 @@ public class LetterService {
         receivedBoxRepository.save(saveReceivedBox.toEntity());
 
         // 알림 보내기
-        alarmService.send(toUser.getNickname(), letter);
+        alarmService.scheduleTask(toUser.getNickname(), letter, arrivedDay);
     }
 
     // 메일 읽기
@@ -128,21 +131,19 @@ public class LetterService {
     }
 
     // 거리에 따른 메일 도착 시간
-    public LocalDateTime getReceivedTime(GpsDTO gps){
+    public int getReceivedTime(GpsDTO gps){
         double distance = gpsService.getDistance(gps);
 
-        LocalDateTime now = LocalDateTime.now();
-
         if(0 <= distance && distance < 10){
-            return now.plusDays(1);
+            return 1;
         } else if (distance < 30) {
-            return now.plusDays(2);
+            return 2;
         } else if (distance < 50) {
-            return now.plusDays(3);
+            return 3;
         } else if (distance < 80) {
-            return now.plusDays(4);
+            return 4;
         } else if (distance > 100) {
-            return now.plusDays(5);
+            return 5;
         } else {
             throw new ErrorException("400"+"거리가 나오지 않습니다.", ErrorCode.NOT_FOUND_EXCEPTION);
         }

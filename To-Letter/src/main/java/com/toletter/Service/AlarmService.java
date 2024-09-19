@@ -9,20 +9,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AlarmService {
     private final EmitterRepository emitterRepository;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     private static final Long TIMEOUT = 10*60*1000L; // 10분
 
     // SSE 연결
     public SseEmitter connect(String loginNickname){
-        this.delete(loginNickname); // 먼저 쌓여있는 알림 삭제
         SseEmitter emitter = emitterRepository.save(loginNickname, new SseEmitter(TIMEOUT));
 
         emitter.onCompletion(() -> {
@@ -64,9 +68,31 @@ public class AlarmService {
 
     // 로그아웃 후 모든 알림을 삭제
     public void delete(String nickname){
-        emitterRepository.deleteAllEmitterWithId(nickname);
-        emitterRepository.deleteAllEventCacheWithId(nickname);
-        emitterRepository.deleteById(nickname);
         emitterRepository.disconnect(nickname);
     }
+
+    // 테스트 및 프론트 작업을 위해 1-5분으로 해놨지만 그 후에는 1-5일로 할 예정
+    public void scheduleTask(String nickname, Letter letter, int time) {
+        scheduler.schedule(() -> {
+            try{
+                System.out.println("새로운 알람이 왔어요!!!");
+                this.send(nickname, letter);
+            }catch (Exception e){
+                throw new ErrorException("스케줄러 에러 :  " + e.getMessage(), ErrorCode.RUNTIME_EXCEPTION);
+            }
+        }, time, TimeUnit.MINUTES);
+    }
+
+    @PreDestroy
+    public void shutdownScheduler() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(60, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
+    }
+
 }
