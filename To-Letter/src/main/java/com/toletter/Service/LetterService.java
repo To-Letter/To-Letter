@@ -83,14 +83,12 @@ public class LetterService {
 
     // 모든 메일함 열기
     public ReceivedLetterResponse receiveLetter(HttpServletRequest httpServletRequest){
-        // 현재 시간
-        LocalDateTime now = LocalDateTime.now();
-
         User user = userService.findUserByToken(httpServletRequest);
 
-        List<Letter> listBox = receivedBoxRepository.findAllByReceivedTimeBeforeAndUserNickname(now, user.getNickname());
+        List<ReceivedBox> listBox = receivedBoxRepository.findAllByUserNickname(user.getNickname());
         List<LetterDTO> LetterList = listBox.stream()
-                .filter(Objects::nonNull)
+                .map(ReceivedBox::getLetter)
+                .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
         return ReceivedLetterResponse.res(user.getNickname(), LetterList);
@@ -104,6 +102,7 @@ public class LetterService {
         List<LetterDTO> unReadListBox = letterList.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(Objects::nonNull)
+                .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .filter(letter -> !letter.getViewCheck())
                 .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
@@ -119,6 +118,7 @@ public class LetterService {
         List<LetterDTO> readListBox = letterList.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(Objects::nonNull)
+                .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .filter(Letter::getViewCheck)
                 .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());

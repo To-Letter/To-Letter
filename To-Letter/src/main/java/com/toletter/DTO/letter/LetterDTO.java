@@ -1,7 +1,6 @@
 package com.toletter.DTO.letter;
 
 import com.toletter.Entity.Letter;
-import com.toletter.Entity.ReceivedBox;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +35,9 @@ public class LetterDTO {
     @ApiModelProperty(value = "내용", example = "안녕? 나는 조교야! 우리 친하게 지내자!")
     private String contents;
 
+    @ApiModelProperty(value = "메일 읽었는지 확인", example = "T / F")
+    private Boolean viewCheck;
+
     public static LetterDTO toDTO(Letter letter) {
         LetterDTO dto = new LetterDTO();
         dto.setId(letter.getId());
@@ -45,6 +47,7 @@ public class LetterDTO {
         dto.setArrivedAt(letter.getArrivedAt());
         dto.setTitle(letter.getTitle());
         dto.setContents(letter.getContents());
+        dto.setViewCheck(letter.getViewCheck());
         return dto;
     }
 }
