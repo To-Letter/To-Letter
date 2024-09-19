@@ -1,6 +1,7 @@
 package com.toletter.Service;
 
 import com.toletter.DTO.letter.GpsDTO;
+import com.toletter.DTO.letter.LetterDTO;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
 import com.toletter.DTO.letter.SaveReceivedBox;
@@ -16,6 +17,8 @@ import javax.servlet.http.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -71,13 +74,11 @@ public class LetterService {
     }
 
     // 메일 읽기
-    public Letter openLetter(HttpServletRequest httpServletRequest, Long letterID){
-        User user = userService.findUserByToken(httpServletRequest);
-
-        Letter letter = receivedBoxRepository.findByLetter(letterID).orElseThrow();
+    public LetterDTO openLetter(Long letterID){
+        Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
         letter.updateViewCheck();
         letterRepository.save(letter);
-        return letter;
+        return LetterDTO.toDTO(letter);
     }
 
     // 모든 메일함 열기
@@ -88,14 +89,25 @@ public class LetterService {
         User user = userService.findUserByToken(httpServletRequest);
 
         List<Letter> listBox = receivedBoxRepository.findAllByReceivedTimeBeforeAndUserNickname(now, user.getNickname());
-        return ReceivedLetterResponse.res(user.getNickname(), listBox);
+        List<LetterDTO> LetterList = listBox.stream()
+                .filter(Objects::nonNull)
+                .map(LetterDTO::toDTO)
+                .collect(Collectors.toList());
+        return ReceivedLetterResponse.res(user.getNickname(), LetterList);
     }
 
     // 안 읽은 메일함 열기
     public ReceivedLetterResponse receivedUnReadLetter(HttpServletRequest httpServletRequest){
         User user = userService.findUserByToken(httpServletRequest);
 
-        List<Letter> unReadListBox = receivedBoxRepository.findByLetterIsReadFalse();
+        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
+        List<LetterDTO> unReadListBox = letterList.stream()
+                .map(ReceivedBox::getLetter)
+                .filter(Objects::nonNull)
+                .filter(letter -> !letter.getViewCheck())
+                .map(LetterDTO::toDTO)
+                .collect(Collectors.toList());
+
         return ReceivedLetterResponse.res(user.getNickname(), unReadListBox);
     }
 
@@ -103,7 +115,15 @@ public class LetterService {
     public ReceivedLetterResponse receivedReadLetter(HttpServletRequest httpServletRequest){
         User user = userService.findUserByToken(httpServletRequest);
 
-        List<Letter> readListBox = receivedBoxRepository.findByLetterIsReadTrue();
+        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
+        List<LetterDTO> readListBox = letterList.stream()
+                .map(ReceivedBox::getLetter)
+                .filter(Objects::nonNull)
+                .filter(Letter::getViewCheck)
+                .map(LetterDTO::toDTO)
+                .collect(Collectors.toList());
+
+
         return ReceivedLetterResponse.res(user.getNickname(), readListBox);
     }
 

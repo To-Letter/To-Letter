@@ -25,12 +25,21 @@ public class AlarmService {
         this.delete(loginNickname); // 먼저 쌓여있는 알림 삭제
         SseEmitter emitter = emitterRepository.save(loginNickname, new SseEmitter(TIMEOUT));
 
-        emitter.onCompletion(() -> emitterRepository.deleteById(loginNickname));
-        emitter.onTimeout(() -> emitterRepository.deleteById(loginNickname));
+        emitter.onCompletion(() -> {
+            System.out.println("Emitter 요청이 안됨 : " + loginNickname);
+            emitterRepository.deleteById(loginNickname);
+        });
+        emitter.onTimeout(() -> {
+            System.out.println("Emitter 유효 시간이 만료된 이메일 : " + loginNickname);
+            emitterRepository.deleteById(loginNickname);
+        });
 
-        // 503 에러를 방지하기 위한 더미 이벤트 전송
-        sendToClient(emitter, loginNickname, "connect. [loginNickname=" + loginNickname + "]");
-
+        try {
+            // 최초 연결 시 메시지를 안 보내면 503 Service Unavailable 에러 발생
+            emitter.send(SseEmitter.event().name("connect").data(loginNickname + " connected!"));
+        } catch (IOException e) {
+            throw new ErrorException("e : " + e, ErrorCode.NOT_FOUND_EXCEPTION);
+        }
         return emitter;
     }
 

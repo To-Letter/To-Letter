@@ -1,6 +1,6 @@
 package com.toletter.DTO.letter.Response;
 
-import com.toletter.Entity.Letter;
+import com.toletter.DTO.letter.LetterDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,9 +14,9 @@ public class ReceivedLetterResponse {
     private String user_nickname;
 
     @Schema(description = "받은 편지 list")
-    private List<Letter> listLetter;
+    private List<LetterDTO> listLetter;
 
-    public static ReceivedLetterResponse res(String user_nickname, List<Letter> listLetter) {
+    public static ReceivedLetterResponse res(String user_nickname, List<LetterDTO> listLetter) {
         return ReceivedLetterResponse.builder()
                 .user_nickname(user_nickname)
                 .listLetter(listLetter)

@@ -77,7 +77,6 @@ public class UserService {
             return UserLoginResponse.res("403", "로그인 실패 / 2차 인증 안됨");
         }
         this.setJwtTokenInHeader(userLoginRequest.getEmail(), user.getUserRole(), httpServletResponse);
-        alarmService.connect(user.getNickname());
         return UserLoginResponse.res("200", "로그인 성공");
     }
 

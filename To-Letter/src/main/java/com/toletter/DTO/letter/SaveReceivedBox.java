@@ -2,7 +2,6 @@ package com.toletter.DTO.letter;
 
 import com.toletter.Entity.Letter;
 import com.toletter.Entity.ReceivedBox;
-import com.toletter.Entity.SentBox;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class SaveReceivedBox {
 
     public ReceivedBox toEntity() {
         return ReceivedBox.builder()
-                .user_nickname(toUserNickname)
+                .userNickname(toUserNickname)
                 .receivedTime(receivedTime)
                 .letter(letter)
                 .build();

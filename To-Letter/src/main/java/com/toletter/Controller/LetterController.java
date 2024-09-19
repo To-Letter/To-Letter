@@ -1,8 +1,8 @@
 package com.toletter.Controller;
 
+import com.toletter.DTO.letter.LetterDTO;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
-import com.toletter.Entity.Letter;
 import com.toletter.Service.LetterService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
@@ -78,8 +78,8 @@ public class LetterController {
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "메일 열기")
-    @GetMapping("/receive/read")
-    public Letter openLetter (HttpServletRequest httpServletRequest, @RequestParam Long letterID) {
-        return letterService.openLetter(httpServletRequest, letterID);
+    @GetMapping("/open")
+    public LetterDTO openLetter (@RequestParam Long letterID) {
+        return letterService.openLetter(letterID);
     }
 }
