@@ -21,6 +21,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .httpBasic().disable() // HTTP Basic 인증을 비활성화
                 .csrf().disable(); // 세션을 사용하지 않고 JWT 토큰을 활용하여 진행, csrf 토큰검사를 비활성화
+        http.cors();
 
         http.authorizeRequests()
                 // 나머지 요청에 대해서는 권한 제한 없이 호출 가능하도록 설정
