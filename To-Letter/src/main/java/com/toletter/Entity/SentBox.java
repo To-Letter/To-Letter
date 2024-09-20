@@ -4,7 +4,6 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -23,7 +22,7 @@ public class SentBox { // 보낸 메일함
 
     @ApiModelProperty(value = "유저 닉네임", example = "testN")
     @Column(nullable = false)
-    private String user_nickname;
+    private String userNickname;
 
     // 보낸 시간
     @ApiModelProperty(value = "보낸 시간", example = "2024-03-01T06:06:12")

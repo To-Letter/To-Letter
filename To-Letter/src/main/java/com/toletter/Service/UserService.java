@@ -23,6 +23,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private  final JwtTokenProvider jwtTokenProvider;
     private final RedisJwtService redisJwtService;
+    private final AlarmService alarmService;
 
     // 아이디 중복 확인
     public void confirmEmail(String userEmail){
@@ -96,6 +97,7 @@ public class UserService {
 
     // 로그아웃
     public void logout(HttpServletRequest httpServletRequest){
+        alarmService.delete(this.findUserByToken(httpServletRequest).getNickname());
         redisJwtService.deleteValues(findUserByToken(httpServletRequest).getEmail());
         jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
     }
@@ -110,6 +112,7 @@ public class UserService {
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return UserDeleteResponse.res("401", "비밀번호가 틀림");
         }
+        alarmService.delete(user.getNickname());
         redisJwtService.deleteValues(userDeleteRequest.getEmail());
         jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
         userRepository.delete(user);

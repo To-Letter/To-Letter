@@ -21,7 +21,7 @@ public class SaveSentBox {
 
     public SentBox toEntity() {
         return SentBox.builder()
-                .user_nickname(fromUserNickname)
+                .userNickname(fromUserNickname)
                 .sentTime(sentTime)
                 .letter(letter)
                 .build();
