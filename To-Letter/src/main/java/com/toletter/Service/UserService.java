@@ -48,6 +48,10 @@ public class UserService {
             throw new ErrorException("같은 이메일이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
+        if(userRepository.existsByNickname(userSignupRequest.getNickname())){
+            throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+
         // 카카오 로그인인지 로컬 로그인인지 구분
         if(userSignupRequest.getLoginType().equals(LoginType.kakaoLogin)){
             user.setSecondConfirmed(true);

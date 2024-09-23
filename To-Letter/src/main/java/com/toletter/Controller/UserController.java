@@ -30,7 +30,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "같은 이메일 존재")
     })
     @ApiOperation(value = "이메일 중복 확인", notes = "토큰 필요 없음")
-    @PostMapping("/su/confirmEmail")
+    @GetMapping("/su/confirmEmail")
     public ResponseEntity<String> confirmEmail(@RequestParam String userEmail) {
         userService.confirmEmail(userEmail);
         return ResponseEntity.ok("이메일 중복 없음.");
@@ -42,7 +42,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "같은 닉네임 존재")
     })
     @ApiOperation(value = "닉네임 중복 확인", notes = "토큰 필요 없음")
-    @PostMapping("/su/confirmNickname")
+    @GetMapping("/su/confirmNickname")
     public ResponseEntity<String> confirmNickname(@RequestParam String userNickname) {
         userService.confirmNickname(userNickname);
         return ResponseEntity.ok("닉네임 중복 없음.");
@@ -69,7 +69,7 @@ public class UserController {
     // 회원가입
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "회원가입 성공"),
-            @ApiResponse(code = 401, message = "같은 이메일 존재")
+            @ApiResponse(code = 401, message = "같은 이메일/닉네임 존재")
     })
     @ApiOperation(value = "유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/su/signup")
@@ -84,9 +84,6 @@ public class UserController {
             @ApiResponse(code = 400, message = "이메일 존재안함"),
             @ApiResponse(code = 401, message = "비밀번호 틀림"),
             @ApiResponse(code = 403, message = "2차 인증 안됨")
-    })
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "response", value = "HttpServletResponse", required = true, dataType = "HttpServletResponse", paramType = "body"),
     })
     @ApiOperation(value = "유저 로그인", notes = "토큰 필요 없음")
     @PostMapping("/su/login")
@@ -176,9 +173,11 @@ public class UserController {
     // 2차 인증
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "2차 인증 메일 전송 성공"),
+            @ApiResponse(code = 401, message = "2차 인증 메일 전송 실패 / 이미 메일을 보냄"),
+            @ApiResponse(code = 403, message = "2차 인증 메일 전송 실패 / 2차 인증 완료한 유저")
     })
     @ApiOperation(value = "2차 인증", notes = "토큰 필요 없음")
-    @PostMapping ("/email/auth")
+    @GetMapping ("/email/auth")
     public ResponseEntity<String> emailAuth(@RequestParam String toEmail) throws Exception {
         emailService.sendEmail(toEmail);
         return ResponseEntity.ok("이메일 전송 성공");
