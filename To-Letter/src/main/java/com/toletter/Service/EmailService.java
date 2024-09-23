@@ -52,6 +52,13 @@ public class EmailService {
 
     // 메일 보내기
     public void sendEmail(String toEmail) throws Exception {
+        if(userRepository.findByEmail(toEmail).get().isSecondConfirmed()){
+            throw new ErrorException("2차 인증을 완료했습니다.", ErrorCode.FORBIDDEN_EXCEPTION);
+        }
+        if(authRepository.existsByEmail(toEmail)){
+            throw new ErrorException("이미 인증 메일을 보냈습니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+
         String randomCode = createCode(); //인증 코드 생성
 
         MimeMessage message = emailSender.createMimeMessage();
@@ -70,7 +77,7 @@ public class EmailService {
     // 데베에 저장
     public void saveDB(String email, String randomCode) {
         if(authRepository.existsByEmail(email)){
-            throw new ErrorException("이미 인증 메일을 보냈습니다.", ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new ErrorException("이미 인증 메일을 보냈습니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         EmailSaveRequest emailSaveRequest = new EmailSaveRequest();
         emailSaveRequest.setEmail(email);
