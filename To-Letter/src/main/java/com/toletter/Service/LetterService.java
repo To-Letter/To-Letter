@@ -11,6 +11,7 @@ import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.*;
@@ -79,9 +80,22 @@ public class LetterService {
     // 메일 읽기
     public LetterDTO openLetter(Long letterID){
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
+        return LetterDTO.toDTO(letter);
+    }
+
+    // 메일 읽음 처리
+    public ResponseEntity<String> viewCheckLetter(Long letterID){
+        Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
         letter.updateViewCheck();
         letterRepository.save(letter);
-        return LetterDTO.toDTO(letter);
+        return ResponseEntity.ok("메일 읽음 처리 성공");
+    }
+
+    // 메일 삭제
+    public ResponseEntity<String> deleteLetter(Long letterID){
+        ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
+        receivedBoxRepository.delete(receivedBox);
+        return ResponseEntity.ok("메일 삭제 성공");
     }
 
     // 모든 메일함 열기

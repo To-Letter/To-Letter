@@ -82,4 +82,30 @@ public class LetterController {
     public LetterDTO openLetter (@RequestParam Long letterID) {
         return letterService.openLetter(letterID);
     }
+
+    // 메일 읽음 처리
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "메일 읽음 처리 성공"),
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+    })
+    @ApiOperation(value = "메일 읽음 처리")
+    @GetMapping("/viewCheckLetter")
+    public ResponseEntity<String> viewCheckLetter (@RequestParam Long letterID) {
+        return letterService.viewCheckLetter(letterID);
+    }
+
+    // 메일 삭제
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "메일 삭제 성공"),
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+    })
+    @ApiOperation(value = "메일 삭제")
+    @DeleteMapping("/deleteLetter")
+    public ResponseEntity<String> deleteLetter (@RequestParam Long letterID) {
+        return letterService.deleteLetter(letterID);
+    }
 }
