@@ -99,13 +99,14 @@ public class LetterController {
     // 메일 삭제
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 삭제 성공"),
+            @ApiResponse(code = 401, message = "메일 삭제 실패, 본인의 메일이 아님"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "메일 삭제")
     @DeleteMapping("/deleteLetter")
-    public ResponseEntity<String> deleteLetter (@RequestParam Long letterID) {
-        return letterService.deleteLetter(letterID);
+    public ResponseEntity<String> deleteLetter (@RequestParam Long letterID, HttpServletRequest httpServletRequest) {
+        return letterService.deleteLetter(letterID, httpServletRequest);
     }
 }

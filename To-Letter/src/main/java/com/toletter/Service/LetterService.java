@@ -92,8 +92,12 @@ public class LetterService {
     }
 
     // 메일 삭제
-    public ResponseEntity<String> deleteLetter(Long letterID){
+    public ResponseEntity<String> deleteLetter(Long letterID, HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
         ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
+        if(!receivedBox.getUserNickname().equals(user.getNickname())){
+            throw new ErrorException("메일 주인이 아닙니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
         receivedBoxRepository.delete(receivedBox);
         return ResponseEntity.ok("메일 삭제 성공");
     }
