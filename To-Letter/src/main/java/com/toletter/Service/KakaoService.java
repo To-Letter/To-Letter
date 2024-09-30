@@ -1,7 +1,10 @@
 package com.toletter.Service;
 
+import com.toletter.DTO.user.Response.UserKaKaoLoginResponse;
+import com.toletter.Entity.User;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
+import com.toletter.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -14,6 +17,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +33,8 @@ public class KakaoService {
     String authUrl = "https://kauth.kakao.com/oauth/authorize?";
     String tokenUrl = "https://kauth.kakao.com/oauth/token";
     String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
+    private final UserRepository userRepository;
+    private final UserService userService;
 
     public String getAuthCode(){
         StringBuffer url = new StringBuffer();
@@ -87,10 +93,7 @@ public class KakaoService {
         return tokenMap;
     }
 
-    public Map getUserInfo(Map token) throws ParseException {
-        String email = "";
-        String nickname = "";
-
+    public UserKaKaoLoginResponse getUserInfo(Map token, HttpServletResponse httpServletResponse) throws ParseException {
         //access_token을 이용하여 사용자 정보 조회
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token.get("access_Token").toString());
@@ -104,24 +107,37 @@ public class KakaoService {
                 request,
                 String.class
         );
-
+        Map userInfo;
         if (response.getStatusCode() == HttpStatus.OK) {
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
-            JSONObject kakaoAccount = (JSONObject) jsonObject.get("kakao_account");
-            JSONObject profile = (JSONObject)kakaoAccount.get("profile");
-            email = kakaoAccount.get("email").toString();
-            nickname = profile.get("nickname").toString();
+            userInfo= jsonParsing(response.getBody());
+            // 만약, 이미 회원가입이 된 카카오톡 유저라면
+            if(userRepository.existsByEmail(userInfo.get("email").toString())){
+                User user = userRepository.findByEmail(userInfo.get("email").toString()).orElseThrow();
+                userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
+                return UserKaKaoLoginResponse.res("201", "로그인 성공", userInfo);
+            }
         } else {
             throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
-        Map<String, String> userMap = new HashMap<String, String>();
-        userMap.put("email", email);
-        userMap.put("nickname", nickname);
-        userMap.put("id", email.split("@")[0]);
+        return UserKaKaoLoginResponse.res("200", "회원가입 성공", userInfo);
+    }
 
-        return userMap;
+    // json으로 변경
+    public Map jsonParsing(String bodyData) throws ParseException {
+        JSONParser jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(bodyData);
+        JSONObject kakaoAccount = (JSONObject) jsonObject.get("kakao_account");
+        JSONObject profile = (JSONObject)kakaoAccount.get("profile");
+        String email = kakaoAccount.get("email").toString();
+        String nickname = profile.get("nickname").toString();
+
+        Map <String, String> userInfo = new HashMap<>();
+        userInfo.put("email", email);
+        userInfo.put("nickname", nickname);
+        userInfo.put("id", email.split("@")[0]);
+
+        return userInfo;
     }
 
 }
