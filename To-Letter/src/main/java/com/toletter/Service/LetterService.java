@@ -1,5 +1,6 @@
 package com.toletter.Service;
 
+import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.letter.GpsDTO;
 import com.toletter.DTO.letter.LetterDTO;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
@@ -77,15 +78,17 @@ public class LetterService {
     }
 
     // 메일 읽기
-    public LetterDTO openLetter(Long letterID){
+    public ResponseDTO openLetter(Long letterID){
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
         letter.updateViewCheck();
         letterRepository.save(letter);
-        return LetterDTO.toDTO(letter);
+
+        LetterDTO letterDTO = LetterDTO.toDTO(letter);
+        return ResponseDTO.res(200, "메일 읽기 성공", letterDTO);
     }
 
     // 모든 메일함 열기
-    public ReceivedLetterResponse receiveLetter(HttpServletRequest httpServletRequest){
+    public ResponseDTO receiveLetter(HttpServletRequest httpServletRequest){
         User user = userService.findUserByToken(httpServletRequest);
 
         List<ReceivedBox> listBox = receivedBoxRepository.findAllByUserNickname(user.getNickname());
@@ -94,11 +97,13 @@ public class LetterService {
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
-        return ReceivedLetterResponse.res(user.getNickname(), LetterList);
+
+        ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), LetterList);
+        return ResponseDTO.res(200, "모든 메일 보여주기", receivedLetterResponse);
     }
 
     // 안 읽은 메일함 열기
-    public ReceivedLetterResponse receivedUnReadLetter(HttpServletRequest httpServletRequest){
+    public ResponseDTO receivedUnReadLetter(HttpServletRequest httpServletRequest){
         User user = userService.findUserByToken(httpServletRequest);
 
         List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
@@ -110,11 +115,12 @@ public class LetterService {
                 .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
 
-        return ReceivedLetterResponse.res(user.getNickname(), unReadListBox);
+        ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), unReadListBox);
+        return ResponseDTO.res(200, "안 읽은 메일 보여주기", receivedLetterResponse);
     }
 
     // 읽은 메일함 열기
-    public ReceivedLetterResponse receivedReadLetter(HttpServletRequest httpServletRequest){
+    public ResponseDTO receivedReadLetter(HttpServletRequest httpServletRequest){
         User user = userService.findUserByToken(httpServletRequest);
 
         List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
@@ -126,8 +132,8 @@ public class LetterService {
                 .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
 
-
-        return ReceivedLetterResponse.res(user.getNickname(), readListBox);
+        ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), readListBox);
+        return ResponseDTO.res(200, "읽은 메일 보여주기", receivedLetterResponse);
     }
 
     // 거리에 따른 메일 도착 시간

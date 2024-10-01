@@ -1,12 +1,10 @@
 package com.toletter.Controller;
 
-import com.toletter.DTO.letter.LetterDTO;
+import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
-import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
 import com.toletter.Service.LetterService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,9 +24,9 @@ public class LetterController {
     })
     @ApiOperation(value = "메일 보내기")
     @PostMapping("/send")
-    public ResponseEntity<String> sendLetter(@RequestBody SendLetterRequest sendLetterRequest, HttpServletRequest httpServletRequest) {
+    public ResponseDTO sendLetter(@RequestBody SendLetterRequest sendLetterRequest, HttpServletRequest httpServletRequest) {
         letterService.sendLetter(sendLetterRequest, httpServletRequest);
-        return ResponseEntity.ok("메일 보내기 성공");
+        return ResponseDTO.res(200, "메일 보내기 성공", "");
     }
 
     // 모든 메일함 열기
@@ -40,7 +38,7 @@ public class LetterController {
     })
     @ApiOperation(value = "모든 메일 받기")
     @GetMapping("/receive")
-    public ReceivedLetterResponse receivedLetter(HttpServletRequest httpServletRequest) {
+    public ResponseDTO receivedLetter(HttpServletRequest httpServletRequest) {
         return letterService.receiveLetter(httpServletRequest);
     }
 
@@ -53,7 +51,7 @@ public class LetterController {
     })
     @ApiOperation(value = "안 읽은 메일함 열기")
     @GetMapping("/receive/unRead")
-    public ReceivedLetterResponse receivedUnReadLetter(HttpServletRequest httpServletRequest) {
+    public ResponseDTO receivedUnReadLetter(HttpServletRequest httpServletRequest) {
         return letterService.receivedUnReadLetter(httpServletRequest);
     }
 
@@ -66,7 +64,7 @@ public class LetterController {
     })
     @ApiOperation(value = "읽은 메일함 열기")
     @GetMapping("/receive/read")
-    public ReceivedLetterResponse receivedReadLetter(HttpServletRequest httpServletRequest) {
+    public ResponseDTO receivedReadLetter(HttpServletRequest httpServletRequest) {
         return letterService.receivedReadLetter(httpServletRequest);
     }
 
@@ -79,7 +77,7 @@ public class LetterController {
     })
     @ApiOperation(value = "메일 열기")
     @GetMapping("/open")
-    public LetterDTO openLetter (@RequestParam Long letterID) {
+    public ResponseDTO openLetter (@RequestParam Long letterID) {
         return letterService.openLetter(letterID);
     }
 }

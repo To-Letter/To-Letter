@@ -1,5 +1,6 @@
 package com.toletter.Service;
 
+import com.toletter.DTO.ResponseDTO;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +31,10 @@ public class KakaoService {
     String tokenUrl = "https://kauth.kakao.com/oauth/token";
     String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
-    public String getAuthCode(){
+    public ResponseDTO getAuthCode(){
         StringBuffer url = new StringBuffer();
         url.append(authUrl) .append("client_id="+kakaoApiKey).append("&redirect_uri="+redirectUrl).append("&response_type=code");
-        return url.toString();
+        return ResponseDTO.res(200, "url 전달 성공",url.toString());
     }
 
     // 토큰 발급하기
