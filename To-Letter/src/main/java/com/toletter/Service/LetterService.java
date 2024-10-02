@@ -11,10 +11,10 @@ import com.toletter.Entity.*;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.*;
+import com.toletter.Service.Jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -27,15 +27,14 @@ public class LetterService {
     private final LetterRepository letterRepository;
     private final SentBoxRepository sentBoxRepository;
     private final ReceivedBoxRepository receivedBoxRepository;
-    private final UserService userService;
     private final GPSService gpsService;
     private final UserRepository userRepository;
     private final AlarmService alarmService;
 
     // 메일 보내기
-    public void sendLetter(SendLetterRequest sendLetterRequest, HttpServletRequest httpServletRequest){
+    public void sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails){
         Letter letter = sendLetterRequest.toEntity();
-        User fromUser = userService.findUserByToken(httpServletRequest); // 보내는 유저
+        User fromUser =  userDetails.getUser(); // 보내는 유저
         User toUser = userRepository.findByNickname((letter.getToUserNickname())).orElseThrow(() -> new ErrorException("유저 없음.", ErrorCode.FORBIDDEN_EXCEPTION)); // 받는 유저
 
         Map fromUserGPS = gpsService.getGpsUrl(fromUser.getAddress()); // 보내는 유저 위도 경도 구함
@@ -88,8 +87,8 @@ public class LetterService {
     }
 
     // 모든 메일함 열기
-    public ResponseDTO receiveLetter(HttpServletRequest httpServletRequest){
-        User user = userService.findUserByToken(httpServletRequest);
+    public ResponseDTO receiveLetter(CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
 
         List<ReceivedBox> listBox = receivedBoxRepository.findAllByUserNickname(user.getNickname());
         List<LetterDTO> LetterList = listBox.stream()
@@ -103,8 +102,8 @@ public class LetterService {
     }
 
     // 안 읽은 메일함 열기
-    public ResponseDTO receivedUnReadLetter(HttpServletRequest httpServletRequest){
-        User user = userService.findUserByToken(httpServletRequest);
+    public ResponseDTO receivedUnReadLetter(CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
 
         List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
         List<LetterDTO> unReadListBox = letterList.stream()
@@ -120,8 +119,8 @@ public class LetterService {
     }
 
     // 읽은 메일함 열기
-    public ResponseDTO receivedReadLetter(HttpServletRequest httpServletRequest){
-        User user = userService.findUserByToken(httpServletRequest);
+    public ResponseDTO receivedReadLetter(CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
 
         List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
         List<LetterDTO> readListBox = letterList.stream()

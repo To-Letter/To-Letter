@@ -9,11 +9,9 @@ import com.toletter.Enums.UserRole;
 import com.toletter.Error.*;
 import com.toletter.JWT.*;
 import com.toletter.Repository.*;
+import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.Jwt.RedisJwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +26,6 @@ public class UserService {
     private  final JwtTokenProvider jwtTokenProvider;
     private final RedisJwtService redisJwtService;
     private final AlarmService alarmService;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     // 아이디 중복 확인
     public void confirmEmail(String userEmail){
@@ -90,16 +87,16 @@ public class UserService {
     }
 
     // 유저 정보 보여주기
-    public ResponseDTO viewUser(HttpServletRequest httpServletRequest){
-        User user = this.findUserByToken(httpServletRequest);
+    public ResponseDTO viewUser(CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
 
         return  ResponseDTO.res(200, "유저 정보 보여주기 성공", UserViewResponse.res(user.getAddress(), user.getNickname(), user.getEmail()));
     }
 
     // 유저 정보 수정
     @Transactional
-    public ResponseDTO updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest){
-        User user = this.findUserByToken(httpServletRequest);
+    public ResponseDTO updateUser(UserUpdateRequest userUpdateRequest, CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
         user.updateUser(userUpdateRequest);
         userRepository.save(user);
         UserUpdateResponse userUpdateResponse = UserUpdateResponse.res("200", "수정 완료",  user.getEmail(), user.getNickname(), user.getAddress());
@@ -107,40 +104,28 @@ public class UserService {
     }
 
     // 로그아웃
-    public void logout(HttpServletRequest httpServletRequest){
-        alarmService.delete(this.findUserByToken(httpServletRequest).getNickname());
-        redisJwtService.deleteValues(findUserByToken(httpServletRequest).getEmail());
-        jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
+    public void logout(CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
+        alarmService.delete(user.getNickname());
+        redisJwtService.deleteValues(user.getEmail());
+        //jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
     }
 
     // 유저 탈퇴
-    public ResponseDTO userDelete(UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest){
+    public ResponseDTO userDelete(UserDeleteRequest userDeleteRequest, CustomUserDetails userDetails){
         // 유저의 아이디가 존재하지 않으면
         if(!userRepository.existsByEmail(userDeleteRequest.getEmail())){
             return ResponseDTO.res(401, "유저 이메일이 없음.", "");
         }
-        User user = userRepository.findByEmail(userDeleteRequest.getEmail()).orElseThrow();
+        User user =  userDetails.getUser();
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return ResponseDTO.res(400, "비밀번호가 틀림", "");
         }
         alarmService.delete(user.getNickname());
         redisJwtService.deleteValues(userDeleteRequest.getEmail());
-        jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
+        //jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
         userRepository.delete(user);
         return ResponseDTO.res(200, "탈퇴 성공", "");
-    }
-
-    public void setFirstAuthentication(String id, String password) {
-        // 1. id, password 기반 Authentication 객체 생성, 해당 객체는 인증 여부를 확인하는 authenticated 값이 false.
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(id, password);
-
-        // 2. 검증 진행 - CustomUserDetailsService.loadUserByUsername 메서드가 실행됨
-        Authentication authentication = authenticationManagerBuilder.getObject()
-                .authenticate(authenticationToken);
-
-        System.out.println("authj : " + authentication.getName());
-        System.out.println(authentication.getAuthorities());
     }
 
     // 토큰 헤더에 저장

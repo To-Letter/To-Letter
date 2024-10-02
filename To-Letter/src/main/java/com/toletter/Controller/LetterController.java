@@ -2,12 +2,12 @@ package com.toletter.Controller;
 
 import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
+import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.LetterService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,8 +24,8 @@ public class LetterController {
     })
     @ApiOperation(value = "메일 보내기")
     @PostMapping("/send")
-    public ResponseDTO sendLetter(@RequestBody SendLetterRequest sendLetterRequest, HttpServletRequest httpServletRequest) {
-        letterService.sendLetter(sendLetterRequest, httpServletRequest);
+    public ResponseDTO sendLetter(@RequestBody SendLetterRequest sendLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        letterService.sendLetter(sendLetterRequest, userDetails);
         return ResponseDTO.res(200, "메일 보내기 성공", "");
     }
 
@@ -38,8 +38,8 @@ public class LetterController {
     })
     @ApiOperation(value = "모든 메일 받기")
     @GetMapping("/receive")
-    public ResponseDTO receivedLetter(HttpServletRequest httpServletRequest) {
-        return letterService.receiveLetter(httpServletRequest);
+    public ResponseDTO receivedLetter(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.receiveLetter(userDetails);
     }
 
     // 안 읽은 메일함 열기
@@ -51,8 +51,8 @@ public class LetterController {
     })
     @ApiOperation(value = "안 읽은 메일함 열기")
     @GetMapping("/receive/unRead")
-    public ResponseDTO receivedUnReadLetter(HttpServletRequest httpServletRequest) {
-        return letterService.receivedUnReadLetter(httpServletRequest);
+    public ResponseDTO receivedUnReadLetter(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.receivedUnReadLetter(userDetails);
     }
 
     // 읽은 메일함 열기
@@ -64,8 +64,8 @@ public class LetterController {
     })
     @ApiOperation(value = "읽은 메일함 열기")
     @GetMapping("/receive/read")
-    public ResponseDTO receivedReadLetter(HttpServletRequest httpServletRequest) {
-        return letterService.receivedReadLetter(httpServletRequest);
+    public ResponseDTO receivedReadLetter(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.receivedReadLetter(userDetails);
     }
 
     // 메일 열어서 확인

@@ -4,11 +4,13 @@ import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.auth.Request.EmailVerifyRequest;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.Service.EmailService;
+import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.KakaoService;
 import com.toletter.Service.UserService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.*;
@@ -127,8 +129,8 @@ public class UserController {
     })
     @ApiOperation(value = "유저 정보 보여주기")
     @GetMapping("/mypage")
-    public ResponseDTO viewUser(HttpServletRequest httpServletRequest) {
-        return userService.viewUser(httpServletRequest);
+    public ResponseDTO viewUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return userService.viewUser(userDetails);
     }
 
     // 마이페이지 수정
@@ -145,8 +147,8 @@ public class UserController {
     })
     @ApiOperation(value = "유저 정보 수정")
     @PutMapping("/update")
-    public ResponseDTO updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest) {
-        return userService.updateUser(userUpdateRequest, httpServletRequest);
+    public ResponseDTO updateUser(@RequestBody UserUpdateRequest userUpdateRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return userService.updateUser(userUpdateRequest, userDetails);
     }
 
     // 로그아웃
@@ -163,8 +165,8 @@ public class UserController {
     })
     @ApiOperation(value = "로그아웃")
     @GetMapping("/logout")
-    public ResponseDTO updateUser(HttpServletRequest httpServletRequest) {
-        userService.logout(httpServletRequest);
+    public ResponseDTO updateUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        userService.logout(userDetails);
         return ResponseDTO.res(200, "로그아웃 성공", "");
     }
 
@@ -209,7 +211,7 @@ public class UserController {
     })
     @ApiOperation(value = "유저 탈퇴")
     @DeleteMapping("/delete")
-    public ResponseDTO userDelete(@RequestBody UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest) {
-        return userService.userDelete(userDeleteRequest, httpServletRequest);
+    public ResponseDTO userDelete(@RequestBody UserDeleteRequest userDeleteRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return userService.userDelete(userDeleteRequest, userDetails);
     }
 }
