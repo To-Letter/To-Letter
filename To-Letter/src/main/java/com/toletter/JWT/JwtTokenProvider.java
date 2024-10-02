@@ -1,6 +1,7 @@
 package com.toletter.JWT;
 
 import com.toletter.Entity.User;
+import com.toletter.Enums.JwtErrorCode;
 import com.toletter.Enums.UserRole;
 import com.toletter.Repository.UserRepository;
 import com.toletter.Error.*;
@@ -9,6 +10,7 @@ import com.toletter.Service.Jwt.RedisJwtService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.*;
+import java.io.IOException;
 import java.security.Key;
 import java.util.*;
 
@@ -83,17 +86,6 @@ public class JwtTokenProvider {
         return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 
-    // 토큰에서 만료 시간 추출
-    public Date getExpireDate(String refreshToken){
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(refreshToken)
-                .getBody();
-        return claims.getExpiration();
-    }
-
     // accessToken 재발행
     public String reissueAccessToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
@@ -141,30 +133,41 @@ public class JwtTokenProvider {
         return null;
     }
 
-    // Token 만료
-    public void expireToken(String token) {
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        Date expiration = claims.getExpiration();
-        Date now = new Date();
-        if (now.after(expiration)) {
-            redisJwtService.deleteValues(this.getUserEmail(token));
+    // 토큰의 유효성 + 만료일자 확인
+    public boolean validateToken(HttpServletResponse response, String jwtToken) throws IOException {
+        try{
+            Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(jwtToken);
+
+        } catch (SecurityException | MalformedJwtException e) {
+            setErrorResponse(response, JwtErrorCode.INVALID_TOKEN, e.getMessage());
+        } catch (ExpiredJwtException e) {
+            return false;
+        } catch (UnsupportedJwtException e) {
+            setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN, e.getMessage());
+        } catch (Exception e) {
+            setErrorResponse(response, JwtErrorCode.WRONG_TOKEN, e.getMessage());
         }
+        return true;
     }
 
-    // 토큰의 유효성 + 만료일자 확인
-    public boolean validateToken(String jwtToken) {
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        Jws<Claims> claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(jwtToken);
+    // 에러처리
+    public void setErrorResponse(HttpServletResponse response, JwtErrorCode code, String errorMessage) throws IOException {
+        JSONObject json = new JSONObject();
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        return !claims.getBody().getExpiration().before(new Date());
+        json.put("code", code.getCode());
+        json.put("message", code.getMessage());
+        json.put("error", errorMessage);
+
+        response.getWriter().print(json);
+        response.getWriter().flush();
     }
 
     // 어세스 토큰 헤더 설정

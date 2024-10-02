@@ -137,11 +137,4 @@ public class UserService {
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
         redisJwtService.setValues(email, refreshToken);
     }
-
-    // 토큰에서 유저 정보 가져오기
-    public User findUserByToken(HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        return userRepository.findByEmail(email).orElseThrow();
-    }
-
 }
