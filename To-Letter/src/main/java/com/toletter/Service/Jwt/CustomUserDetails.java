@@ -1,6 +1,7 @@
 package com.toletter.Service.Jwt;
 
 import com.toletter.Entity.User;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 @Slf4j
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails, Serializable {
@@ -29,7 +31,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
 
     @Override
     public String getUsername() {
-        return user.getNickname();
+        return user.getEmail();
     }
 
     @Override
