@@ -2,6 +2,7 @@ package com.toletter.Service;
 
 import com.toletter.DTO.user.Response.UserKaKaoLoginResponse;
 import com.toletter.Entity.User;
+import com.toletter.Enums.LoginType;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.UserRepository;
@@ -110,11 +111,16 @@ public class KakaoService {
         Map userInfo;
         if (response.getStatusCode() == HttpStatus.OK) {
             userInfo= jsonParsing(response.getBody());
-            // 만약, 이미 회원가입이 된 카카오톡 유저라면
+
             if(userRepository.existsByEmail(userInfo.get("email").toString())){
                 User user = userRepository.findByEmail(userInfo.get("email").toString()).orElseThrow();
-                userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
-                return UserKaKaoLoginResponse.res("201", "로그인 성공", userInfo);
+                // 만약, 이미 회원가입이 된 카카오톡 유저라면
+                if(user.getLoginType().equals(LoginType.kakaoLogin)){
+                    userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
+                    return UserKaKaoLoginResponse.res("201", "로그인 성공", userInfo);
+                } else if (user.getLoginType().equals(LoginType.localLogin)) {
+                    throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", ErrorCode.FORBIDDEN_EXCEPTION);
+                }
             }
         } else {
             throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
