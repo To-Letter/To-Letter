@@ -1,5 +1,6 @@
 package com.toletter.Controller;
 
+import com.toletter.DTO.user.Request.UserKaKaoUpdateRequest;
 import com.toletter.DTO.user.Response.UserKaKaoLoginResponse;
 import com.toletter.Service.KakaoService;
 import io.swagger.annotations.ApiOperation;
@@ -28,6 +29,18 @@ public class KaKaoController {
     @GetMapping("/su/auth")
     public String authKakao(){
         return kakaoService.getAuthCode();
+    }
+
+    // 카카오 회원가입
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "카카오 회원가입 성공"),
+            @ApiResponse(code = 401, message = "같은 이메일/닉네임 존재")
+    })
+    @ApiOperation(value = "카카오 유저 회원가입", notes = "토큰 필요 없음")
+    @PostMapping("/su/signup")
+    public ResponseEntity<String> userKakaoSignUp(@RequestBody UserKaKaoUpdateRequest userKaKaoUpdateRequest) {
+        kakaoService.kakaoSignup(userKaKaoUpdateRequest);
+        return ResponseEntity.ok("회원가입 성공");
     }
 
     // 카카오 로그인

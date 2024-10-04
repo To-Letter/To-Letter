@@ -1,5 +1,6 @@
 package com.toletter.Entity;
 
+import com.toletter.DTO.user.Request.UserKaKaoUpdateRequest;
 import com.toletter.DTO.user.Request.UserUpdateRequest;
 import com.toletter.Enums.LoginType;
 import javax.persistence.*;
@@ -53,5 +54,10 @@ public class User {
     public void updateUser(UserUpdateRequest userUpdateRequest){
         this.address = userUpdateRequest.getAddress();
         this.nickname = userUpdateRequest.getNickname();
+    }
+
+    public void updateKakaoUser(UserKaKaoUpdateRequest userKaKaoUpdateRequest){
+        this.address = userKaKaoUpdateRequest.getAddress();
+        this.nickname = userKaKaoUpdateRequest.getNickname();
     }
 }

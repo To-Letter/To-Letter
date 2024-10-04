@@ -2,13 +2,16 @@ package com.toletter.Service;
 
 import com.toletter.DTO.user.KaKaoDTO;
 import com.toletter.DTO.user.Request.UserKaKaoSignupRequest;
+import com.toletter.DTO.user.Request.UserKaKaoUpdateRequest;
 import com.toletter.DTO.user.Response.UserKaKaoLoginResponse;
 import com.toletter.Entity.User;
 import com.toletter.Enums.LoginType;
 import com.toletter.Enums.UserRole;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
+import com.toletter.JWT.JwtTokenProvider;
 import com.toletter.Repository.UserRepository;
+import com.toletter.Service.Jwt.RedisJwtService;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -44,6 +47,9 @@ public class KakaoService {
     String unLinkUrl = "https://kapi.kakao.com/v1/user/unlink";
     private final UserRepository userRepository;
     private final UserService userService;
+    private  final JwtTokenProvider jwtTokenProvider;
+    private final RedisJwtService redisJwtService;
+    private final AlarmService alarmService;
 
     public String getAuthCode(){
         StringBuffer url = new StringBuffer();
@@ -149,6 +155,18 @@ public class KakaoService {
         return UserKaKaoLoginResponse.res("200", "회원가입 성공", kakaoUser);
     }
 
+    public ResponseEntity<String> kakaoSignup(UserKaKaoUpdateRequest userKaKaoUpdateRequest){
+        User user = userRepository.findByEmail(userKaKaoUpdateRequest.getEmail()).orElseThrow();
+
+        if(!userKaKaoUpdateRequest.getEmail().equals(user.getEmail())){
+            throw new ErrorException("카카오 회원가입 실패/유저가 다름", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+        user.updateKakaoUser(userKaKaoUpdateRequest);
+        userRepository.save(user);
+
+        return ResponseEntity.ok("카카오 회원가입 성공");
+    }
+
     public void userKaKaoDelete(Map token, HttpServletRequest httpServletRequest) throws ParseException {
         //access_token을 이용하여 사용자 정보 조회
         HttpHeaders headers = new HttpHeaders();
@@ -173,6 +191,9 @@ public class KakaoService {
 
             // 카카오 로그인인지와 탈퇴 유저가 맞는지 확인
             if(user.getLoginType().equals(LoginType.kakaoLogin) && user.getKakaoId().equals(userId)){
+                alarmService.delete(user.getNickname());
+                redisJwtService.deleteValues(user.getEmail());
+                jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
                 userRepository.delete(user);
             }
 
