@@ -1,5 +1,6 @@
 package com.toletter.Entity;
 
+import com.toletter.DTO.user.Request.UserKaKaoUpdateRequest;
 import com.toletter.DTO.user.Request.UserUpdateRequest;
 import com.toletter.Enums.LoginType;
 import javax.persistence.*;
@@ -24,12 +25,14 @@ public class User {
     @ApiModelProperty(value = "비밀번호(암호화)", example = "testPW")
     private String password;
 
+    @ApiModelProperty(value = "카카오 회원 번호", example = "123456789")
+    private Long kakaoId;
+
     @ApiModelProperty(value = "닉네임", example = "testNickname")
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String nickname;
 
     @ApiModelProperty(value = "주소(편지를 받을 집주소)", example = "경기도 군포시")
-    @Column(nullable = false)
     private String address;
 
     // 로그인타입
@@ -51,5 +54,10 @@ public class User {
     public void updateUser(UserUpdateRequest userUpdateRequest){
         this.address = userUpdateRequest.getAddress();
         this.nickname = userUpdateRequest.getNickname();
+    }
+
+    public void updateKakaoUser(UserKaKaoUpdateRequest userKaKaoUpdateRequest){
+        this.address = userKaKaoUpdateRequest.getAddress();
+        this.nickname = userKaKaoUpdateRequest.getNickname();
     }
 }
