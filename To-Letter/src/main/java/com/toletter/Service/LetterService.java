@@ -78,14 +78,22 @@ public class LetterService {
     }
 
     // 메일 읽기
-    public LetterDTO openLetter(Long letterID){
+    public LetterDTO openLetter(Long letterID, HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
+        if(!user.getEmail().equals(letter.getToUserNickname())){
+            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
         return LetterDTO.toDTO(letter);
     }
 
     // 메일 읽음 처리
-    public ResponseEntity<String> viewCheckLetter(Long letterID){
+    public ResponseEntity<String> viewCheckLetter(Long letterID, HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
+        if(!user.getEmail().equals(letter.getToUserNickname())){
+            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
         letter.updateViewCheck();
         letterRepository.save(letter);
         return ResponseEntity.ok("메일 읽음 처리 성공");
@@ -96,7 +104,7 @@ public class LetterService {
         User user = userService.findUserByToken(httpServletRequest);
         ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
         if(!receivedBox.getUserNickname().equals(user.getNickname())){
-            throw new ErrorException("메일 주인이 아닙니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         receivedBoxRepository.delete(receivedBox);
         return ResponseEntity.ok("메일 삭제 성공");

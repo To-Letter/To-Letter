@@ -73,27 +73,29 @@ public class LetterController {
     // 메일 열어서 확인
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 열기 성공"),
+            @ApiResponse(code = 401, message = "메일 열기 실패, 본인의 메일이 아님"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "메일 열기")
     @GetMapping("/open")
-    public LetterDTO openLetter (@RequestParam Long letterID) {
-        return letterService.openLetter(letterID);
+    public LetterDTO openLetter (@RequestParam Long letterID, HttpServletRequest httpServletRequest) {
+        return letterService.openLetter(letterID, httpServletRequest);
     }
 
     // 메일 읽음 처리
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 읽음 처리 성공"),
+            @ApiResponse(code = 401, message = "메일 읽음 처리 실패, 본인의 메일이 아님"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "메일 읽음 처리")
     @GetMapping("/viewCheckLetter")
-    public ResponseEntity<String> viewCheckLetter (@RequestParam Long letterID) {
-        return letterService.viewCheckLetter(letterID);
+    public ResponseEntity<String> viewCheckLetter (@RequestParam Long letterID, HttpServletRequest httpServletRequest) {
+        return letterService.viewCheckLetter(letterID, httpServletRequest);
     }
 
     // 메일 삭제
