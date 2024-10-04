@@ -1,10 +1,9 @@
 package com.toletter.DTO.user.Response;
 
+import com.toletter.DTO.user.KaKaoDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.Map;
 
 @Getter
 @Builder
@@ -16,9 +15,9 @@ public class UserKaKaoLoginResponse {
     private String responseMessage;
 
     @Schema(description = "유저 정보", example = "이메일 등")
-    private Map userInfo;
+    private KaKaoDTO userInfo;
 
-    public static UserKaKaoLoginResponse res(String responseCode, String responseMessage, Map userInfo) {
+    public static UserKaKaoLoginResponse res(String responseCode, String responseMessage, KaKaoDTO userInfo) {
         return UserKaKaoLoginResponse.builder()
                 .responseCode(responseCode)
                 .responseMessage(responseMessage)
