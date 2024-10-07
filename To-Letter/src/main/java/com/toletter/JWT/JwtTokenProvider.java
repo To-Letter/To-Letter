@@ -133,6 +133,21 @@ public class JwtTokenProvider {
         return null;
     }
 
+    // Token 만료
+    public void expireToken(String token) {
+        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        Date expiration = claims.getExpiration();
+        Date now = new Date();
+        if (now.after(expiration)) {
+            redisJwtService.deleteValues(this.getUserEmail(token));
+        }
+    }
+
     // 토큰의 유효성 + 만료일자 확인
     public boolean validateToken(HttpServletResponse response, String jwtToken) throws IOException {
         try{

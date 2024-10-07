@@ -3,8 +3,6 @@ package com.toletter.Controller;
 import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.Service.Jwt.CustomUserDetails;
-import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
-import com.toletter.DTO.letter.Response.SentLetterResponse;
 import com.toletter.Service.LetterService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +39,7 @@ public class LetterController {
     @ApiOperation(value = "받은 모든 메일함 열기")
     @GetMapping("/receive")
     public ResponseDTO receivedLetter(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.receiveLetter(userDetails);
+        return letterService.receivedLetter(userDetails);
     }
 
     // 안 읽은 메일함 열기
@@ -80,8 +78,8 @@ public class LetterController {
     })
     @ApiOperation(value = "받은 메일함 열기")
     @GetMapping("/receive/open")
-    public LetterDTO openReceivedLetter (@RequestParam Long letterID, HttpServletRequest httpServletRequest) {
-        return letterService.openReceivedLetter(letterID, httpServletRequest);
+    public ResponseDTO openReceivedLetter (@RequestParam Long letterID, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.openReceivedLetter(letterID, userDetails);
     }
 
     // 메일 읽음 처리
@@ -94,8 +92,8 @@ public class LetterController {
     })
     @ApiOperation(value = "메일 읽음 처리")
     @GetMapping("/receive/viewCheckLetter")
-    public ResponseEntity<String> viewCheckReceivedLetter (@RequestParam Long letterID, HttpServletRequest httpServletRequest) {
-        return letterService.viewCheckReceivedLetter(letterID, httpServletRequest);
+    public ResponseDTO viewCheckReceivedLetter (@RequestParam Long letterID, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.viewCheckReceivedLetter(letterID, userDetails);
     }
 
     // 보낸 모든 메일함
@@ -107,8 +105,8 @@ public class LetterController {
     })
     @ApiOperation(value = "보낸 모든 메일함 열기")
     @GetMapping("/sent")
-    public SentLetterResponse viewSentBox (HttpServletRequest httpServletRequest) {
-        return letterService.viewSentBox (httpServletRequest);
+    public ResponseDTO viewSentBox (@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.viewSentBox (userDetails);
     }
 
     // 보낸 메일 열어서 확인
@@ -119,16 +117,10 @@ public class LetterController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
-    @ApiOperation(value = "메일 열기")
-    @GetMapping("/open")
-    public ResponseDTO openLetter (@RequestParam Long letterID) {
-        return letterService.openLetter(letterID);
-    }
-
     @ApiOperation(value = "보낸 메일함 열기")
     @GetMapping("/sent/open")
-    public LetterDTO openSentLetter (@RequestParam Long letterID, HttpServletRequest httpServletRequest) {
-        return letterService.openSentLetter(letterID, httpServletRequest);
+    public ResponseDTO openSentLetter (@RequestParam Long letterID, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.openSentLetter(letterID, userDetails);
     }
 
     // 메일 삭제
@@ -141,8 +133,8 @@ public class LetterController {
     })
     @ApiOperation(value = "메일 삭제")
     @DeleteMapping("/deleteLetter")
-    public ResponseEntity<String> deleteLetter (@RequestParam Long letterID, HttpServletRequest httpServletRequest) {
-        return letterService.deleteLetter(letterID, httpServletRequest);
+    public ResponseDTO deleteLetter (@RequestParam Long letterID, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.deleteLetter(letterID, userDetails);
 
     }
 }
