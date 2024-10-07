@@ -5,6 +5,7 @@ import com.toletter.DTO.letter.GpsDTO;
 import com.toletter.DTO.letter.LetterDTO;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
+import com.toletter.DTO.letter.Response.SentLetterResponse;
 import com.toletter.DTO.letter.SaveReceivedBox;
 import com.toletter.DTO.letter.SaveSentBox;
 import com.toletter.Entity.*;
@@ -13,6 +14,7 @@ import com.toletter.Error.ErrorException;
 import com.toletter.Repository.*;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -76,19 +78,53 @@ public class LetterService {
         alarmService.scheduleTask(toUser.getNickname(), letter, arrivedDay);
     }
 
+    // 받은 메일 읽기
+    public ResponseDTO openReceivedLetter(Long letterID, HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
+        Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
+
+        if(!user.getNickname().equals(letter.getToUserNickname())){
+            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+        return LetterDTO.toDTO(letter);
+    }
+
+    // 메일 읽음 처리
+    public ResponseEntity<String> viewCheckReceivedLetter(Long letterID, HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
     // 메일 읽기
     public ResponseDTO openLetter(Long letterID){
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
+
+        if(!user.getNickname().equals(letter.getToUserNickname())){
+            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
         letter.updateViewCheck();
         letterRepository.save(letter);
 
         LetterDTO letterDTO = LetterDTO.toDTO(letter);
         return ResponseDTO.res(200, "메일 읽기 성공", letterDTO);
+        return ResponseEntity.ok("메일 읽음 처리 성공");
+    }
+
+    // 메일 삭제
+    public ResponseEntity<String> deleteLetter(Long letterID, HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
+        ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
+
+        if(!receivedBox.getUserNickname().equals(user.getNickname())){
+            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+        receivedBoxRepository.delete(receivedBox);
+        return ResponseEntity.ok("메일 삭제 성공");
     }
 
     // 모든 메일함 열기
     public ResponseDTO receiveLetter(CustomUserDetails userDetails){
         User user =  userDetails.getUser();
+    // 모든 받은 메일함 열기
+    public ReceivedLetterResponse viewReceivedBox(HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
 
         List<ReceivedBox> listBox = receivedBoxRepository.findAllByUserNickname(user.getNickname());
         List<LetterDTO> LetterList = listBox.stream()
@@ -101,6 +137,9 @@ public class LetterService {
         return ResponseDTO.res(200, "모든 메일 보여주기", receivedLetterResponse);
     }
 
+    // 안 읽은 받은 메일함 열기
+    public ReceivedLetterResponse receivedUnReadLetter(HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
     // 안 읽은 메일함 열기
     public ResponseDTO receivedUnReadLetter(CustomUserDetails userDetails){
         User user =  userDetails.getUser();
@@ -121,6 +160,9 @@ public class LetterService {
     // 읽은 메일함 열기
     public ResponseDTO receivedReadLetter(CustomUserDetails userDetails){
         User user =  userDetails.getUser();
+    // 읽은 받은 메일함 열기
+    public ReceivedLetterResponse receivedReadLetter(HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
 
         List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
         List<LetterDTO> readListBox = letterList.stream()
@@ -134,6 +176,32 @@ public class LetterService {
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), readListBox);
         return ResponseDTO.res(200, "읽은 메일 보여주기", receivedLetterResponse);
     }
+
+    // 보낸 메일함 열기
+    public SentLetterResponse viewSentBox(HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
+
+        List<SentBox> letterList = sentBoxRepository.findAllByUserNickname(user.getNickname());
+        List<LetterDTO> sentListBox = letterList.stream()
+                .map(SentBox::getLetter)
+                .filter(Objects::nonNull)
+                .map(LetterDTO::toDTO)
+                .collect(Collectors.toList());
+
+        return SentLetterResponse.res(user.getNickname(), sentListBox);
+    }
+
+    // 보낸 메일 읽기
+    public LetterDTO openSentLetter(Long letterID, HttpServletRequest httpServletRequest){
+        User user = userService.findUserByToken(httpServletRequest);
+        Letter letter = sentBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
+
+        if(!user.getNickname().equals(letter.getFromUserNickname())){
+            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+        return LetterDTO.toDTO(letter);
+    }
+
 
     // 거리에 따른 메일 도착 시간
     public int getReceivedTime(GpsDTO gps){

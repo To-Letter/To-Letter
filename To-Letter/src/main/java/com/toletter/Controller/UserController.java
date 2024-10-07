@@ -11,10 +11,10 @@ import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.*;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,7 +22,6 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final EmailService emailService;
-    private final KakaoService kakaoService;
 
     // 이메일 중복 확인
     @ApiResponses( value ={
