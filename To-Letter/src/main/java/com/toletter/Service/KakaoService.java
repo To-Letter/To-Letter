@@ -9,6 +9,7 @@ import com.toletter.Enums.LoginType;
 import com.toletter.Enums.UserRole;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
+import com.toletter.JWT.JwtTokenProvider;
 import com.toletter.Repository.UserRepository;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.Jwt.RedisJwtService;
@@ -24,6 +25,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +47,7 @@ public class KakaoService {
     private final UserService userService;
     private final RedisJwtService redisJwtService;
     private final AlarmService alarmService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public ResponseDTO getAuthCode(){
         StringBuffer url = new StringBuffer();
@@ -162,7 +165,7 @@ public class KakaoService {
         return ResponseEntity.ok("카카오 회원가입 성공");
     }
 
-    public void userKaKaoDelete(Map token, CustomUserDetails userDetails) throws ParseException {
+    public void userKaKaoDelete(HttpServletRequest httpServletRequest, Map token, CustomUserDetails userDetails) throws ParseException {
         //access_token을 이용하여 사용자 정보 조회
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token.get("access_Token").toString());
@@ -188,7 +191,7 @@ public class KakaoService {
             if(user.getLoginType().equals(LoginType.kakaoLogin) && user.getKakaoId().equals(userId)){
                 alarmService.delete(user.getNickname());
                 redisJwtService.deleteValues(user.getEmail());
-                //jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
+                jwtTokenProvider.expireToken(httpServletRequest);
                 userRepository.delete(user);
             }
 
