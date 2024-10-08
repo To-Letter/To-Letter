@@ -119,8 +119,8 @@ public class UserController {
     })
     @ApiOperation(value = "로그아웃")
     @GetMapping("/logout")
-    public ResponseDTO updateUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        userService.logout(userDetails);
+    public ResponseDTO updateUser(HttpServletRequest httpServletRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        userService.logout(httpServletRequest, userDetails);
         return ResponseDTO.res(200, "로그아웃 성공", "");
     }
 
@@ -165,7 +165,7 @@ public class UserController {
     })
     @ApiOperation(value = "유저 탈퇴")
     @DeleteMapping("/delete")
-    public ResponseDTO userDelete(@RequestBody UserDeleteRequest userDeleteRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return userService.userDelete(userDeleteRequest, userDetails);
+    public ResponseDTO userDelete(HttpServletRequest httpServletRequest, @RequestBody UserDeleteRequest userDeleteRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return userService.userDelete(httpServletRequest, userDeleteRequest, userDetails);
     }
 }

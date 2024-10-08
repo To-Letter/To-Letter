@@ -1,6 +1,7 @@
 package com.toletter.Config;
 
 import com.toletter.JWT.JwtAuthenticationTokenFilter;
+import com.toletter.JWT.JwtExceptionFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
+    private final JwtExceptionFilter jwtExceptionFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -31,6 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout() // 로그아웃 설정
                 .and()
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtExceptionFilter, JwtAuthenticationTokenFilter.class)
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
     }
 
