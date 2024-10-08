@@ -1,6 +1,7 @@
 package com.toletter.JWT;
 
 import com.toletter.Enums.JwtErrorCode;
+import com.toletter.Service.Jwt.RedisJwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisJwtService redisJwtService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -31,24 +33,26 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String token = jwtTokenProvider.resolveAccessToken(request);
         String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
-        System.out.println("token2 : " + token);
-
         if(token != null ){ //  accessToken 있으면
-            if(jwtTokenProvider.validateToken(response, token)){ // accessToken 검증
+            if(jwtTokenProvider.validateToken(response, token) && !redisJwtService.isValidBlackList(token)){ // accessToken 검증
                 this.setAuthentication(token);
             } else { // accessToken 검증 실패 시
-                System.out.println("err");
-                if(jwtTokenProvider.validateToken(response, refreshToken)){ // refreshToken 검증
+                log.info("accessToken 만료");
+                if(jwtTokenProvider.validateToken(response, refreshToken) && !redisJwtService.isValidBlackList(token)){ // refreshToken 검증
                     String newAccessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
-                    String newRefreshToken = jwtTokenProvider.reissueRefreshToken(refreshToken);
+                    String newRefreshToken = jwtTokenProvider.reissueRefreshToken(newAccessToken, refreshToken);
 
                     jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
                     jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
                     this.setAuthentication(newAccessToken);
                 } else {
-                    jwtTokenProvider.setErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN, "refreshToken이 만료되었습니다. 다시 로그인해주세요.");
+                    JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN,"refreshToken 만료되었습니다. 다시 로그인하세요");
+                    return;
                 }
             }
+        } else {
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN,"빈 문자열입니다. 다시 로그인해주세요.");
+            return;
         }
         filterChain.doFilter(request, response);
     }

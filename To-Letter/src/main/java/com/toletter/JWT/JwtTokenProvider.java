@@ -10,7 +10,6 @@ import com.toletter.Service.Jwt.RedisJwtService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -97,7 +96,7 @@ public class JwtTokenProvider {
     }
 
     // refreshToken 재발급
-    public String reissueRefreshToken(String refreshToken) {
+    public String reissueRefreshToken(String newAccessToken, String refreshToken) {
         String email = this.getUserEmail(refreshToken);
 
         if (!redisJwtService.isValid(email)) {
@@ -113,7 +112,7 @@ public class JwtTokenProvider {
         String newRefreshToken = createRefreshToken(email, user.get().getUserRole());
 
         redisJwtService.deleteValues(email);
-        redisJwtService.setValues(email, newRefreshToken);
+        redisJwtService.setValues(email, newAccessToken, newRefreshToken);
 
         return newRefreshToken;
     }
@@ -134,18 +133,19 @@ public class JwtTokenProvider {
     }
 
     // Token 만료
-    public void expireToken(String token) {
+    public void expireToken(HttpServletRequest httpServletRequest) {
+        String accessToken = this.resolveAccessToken(httpServletRequest);
+        String refreshToken = this.resolveRefreshToken(httpServletRequest);
+
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(accessToken)
                 .getBody();
         Date expiration = claims.getExpiration();
         Date now = new Date();
-        if (now.after(expiration)) {
-            redisJwtService.deleteValues(this.getUserEmail(token));
-        }
+        redisJwtService.setBlackList(accessToken, refreshToken, (expiration.getTime()-now.getTime()));
     }
 
     // 토큰의 유효성
@@ -157,32 +157,18 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(jwtToken);
 
-        } catch (SecurityException | MalformedJwtException e) {
-            setErrorResponse(response, JwtErrorCode.INVALID_TOKEN, e.getMessage());
+        } catch (SignatureException | MalformedJwtException e) {
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.INVALID_TOKEN,e.getMessage());
         } catch (ExpiredJwtException e) {
             return false;
         } catch (UnsupportedJwtException e) {
-            setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN, e.getMessage());
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN,e.getMessage());
         } catch (IllegalArgumentException e) {
-            setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN, e.getMessage());
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN,e.getMessage());
         } catch (Exception e) {
-            setErrorResponse(response, JwtErrorCode.WRONG_TOKEN, e.getMessage());
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TOKEN,e.getMessage());
         }
         return true;
-    }
-
-    // 에러처리
-    public void setErrorResponse(HttpServletResponse response, JwtErrorCode code, String errorMessage) throws IOException {
-        JSONObject json = new JSONObject();
-        response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-        json.put("code", code.getCode());
-        json.put("message", code.getMessage());
-        json.put("error", errorMessage);
-
-        response.getWriter().print(json);
-        response.getWriter().flush();
     }
 
     // 어세스 토큰 헤더 설정
