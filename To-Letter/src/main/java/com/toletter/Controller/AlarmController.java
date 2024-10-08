@@ -2,7 +2,6 @@ package com.toletter.Controller;
 
 import com.toletter.Service.AlarmService;
 import com.toletter.Service.Jwt.CustomUserDetails;
-import com.toletter.Service.UserService;
 import com.toletter.Entity.User;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping(value = "/alarm")
 public class AlarmController {
     private final AlarmService alarmService;
-    private final UserService userService;
 
     // 메시지 알림
     @ApiResponses( value ={

@@ -1,9 +1,6 @@
 package com.toletter.JWT;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import org.json.simple.JSONObject;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import com.toletter.Enums.JwtErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -47,6 +44,9 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
                     jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
                     jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
+                    this.setAuthentication(newAccessToken);
+                } else {
+                    jwtTokenProvider.setErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN, "refreshToken이 만료되었습니다. 다시 로그인해주세요.");
                 }
             }
         }

@@ -2,7 +2,6 @@ package com.toletter.Controller;
 
 import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.user.Request.UserKaKaoUpdateRequest;
-import com.toletter.DTO.user.Response.UserKaKaoLoginResponse;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.KakaoService;
 import io.swagger.annotations.ApiOperation;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
@@ -56,7 +54,7 @@ public class KaKaoController {
     })
     @ApiOperation(value = "카카오 로그인")
     @PostMapping("/su/token")
-    public UserKaKaoLoginResponse tokenKaKao(@RequestParam String code, HttpServletResponse httpServletResponse) throws ParseException {
+    public ResponseDTO tokenKaKao(@RequestParam String code, HttpServletResponse httpServletResponse) throws ParseException {
         Map token = kakaoService.getTokenUrl(code);
         return kakaoService.getUserInfo(token, httpServletResponse);
     }
@@ -68,9 +66,9 @@ public class KaKaoController {
     })
     @ApiOperation(value = "카카오 유저 탈퇴")
     @DeleteMapping("/delete")
-    public ResponseEntity<String> tokenKaKao(@RequestParam String code, @AuthenticationPrincipal CustomUserDetails userDetails, HttpServletRequest request) throws ParseException {
+    public ResponseDTO tokenKaKao( @RequestParam String code, @AuthenticationPrincipal CustomUserDetails userDetails) throws ParseException {
         Map token = kakaoService.getTokenUrl(code);
-        kakaoService.userKaKaoDelete(token, userDetails, request);
-        return ResponseEntity.ok("탈퇴 성공");
+        kakaoService.userKaKaoDelete(token, userDetails);
+        return ResponseDTO.res(200,"탈퇴 성공","");
     }
 }

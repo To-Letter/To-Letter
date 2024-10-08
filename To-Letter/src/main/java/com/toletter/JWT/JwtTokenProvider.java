@@ -148,7 +148,7 @@ public class JwtTokenProvider {
         }
     }
 
-    // 토큰의 유효성 + 만료일자 확인
+    // 토큰의 유효성
     public boolean validateToken(HttpServletResponse response, String jwtToken) throws IOException {
         try{
             Key key = Keys.hmacShaKeyFor(secretKey.getBytes());

@@ -54,14 +54,9 @@ public class UserService {
             throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
-        // 카카오 로그인인지 로컬 로그인인지 구분
-        if(userSignupRequest.getLoginType().equals(LoginType.kakaoLogin)){
-            user.setSecondConfirmed(true);
-        } else if (userSignupRequest.getLoginType().equals(LoginType.localLogin)) {
-            // 비밀번호 암호화
-            user.setPassword(passwordEncoder.encode(userSignupRequest.getPassword()));
-            user.setSecondConfirmed(false);
-        }
+        // 비밀번호 암호화
+        user.setPassword(passwordEncoder.encode(userSignupRequest.getPassword()));
+        user.setSecondConfirmed(false);
         user.setUserRole(UserRole.User);
         userRepository.save(user);
     }
@@ -99,7 +94,7 @@ public class UserService {
         User user =  userDetails.getUser();
         user.updateUser(userUpdateRequest);
         userRepository.save(user);
-        UserUpdateResponse userUpdateResponse = UserUpdateResponse.res("200", "수정 완료",  user.getEmail(), user.getNickname(), user.getAddress());
+        UserUpdateResponse userUpdateResponse = UserUpdateResponse.res(user.getEmail(), user.getNickname(), user.getAddress());
         return ResponseDTO.res(200, "유저 정보 수정 성공", userUpdateResponse);
     }
 

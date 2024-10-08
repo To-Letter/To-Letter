@@ -8,7 +8,6 @@ import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.UserService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.parser.ParseException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,24 +42,6 @@ public class UserController {
     public ResponseDTO confirmNickname(@RequestParam String userNickname) {
         userService.confirmNickname(userNickname);
         return ResponseDTO.res(200, "닉네임 중복 없음", "");
-    }
-
-    // 토큰 재발급
-    @ApiResponses( value ={
-            @ApiResponse(code = 200, message = "토큰 재발급 완료"),
-            @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
-            @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
-            @ApiResponse(code = 1003, message = "만료된 토큰"),
-            @ApiResponse(code = 1004, message = "변조된 토큰"),
-            @ApiResponse(code = 1005, message = "잘못된 접근")
-    })
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
-    })
-    @ApiOperation(value = "토큰 재발급", notes = "accessToken 만료 시 refreshToken 검증 후 토큰 재발급")
-    @GetMapping("/reissue")
-    public ResponseDTO reissueToken() {
-        return ResponseDTO.res(200, "토큰 재발급 완료", "");
     }
 
     // 회원가입
