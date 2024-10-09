@@ -1,6 +1,7 @@
 package com.toletter.Service.Jwt;
 
 import com.toletter.Entity.User;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,13 +9,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 @Slf4j
 @RequiredArgsConstructor
-public class UserDetailslmp implements UserDetails {
+public class CustomUserDetails implements UserDetails, Serializable {
     private final User user;
 
     public User getUser() {
@@ -28,7 +31,7 @@ public class UserDetailslmp implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getNickname();
+        return user.getEmail();
     }
 
     @Override
@@ -54,17 +57,8 @@ public class UserDetailslmp implements UserDetails {
     @Override
     @Transactional
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        List<String> userRole = new ArrayList<>();
-//        userRole.add(user.getUserRole().toString());
-//        String authority = userRole.toString();
-
-//        SimpleGrantedAuthority simpleAuthority = new SimpleGrantedAuthority(authority);
-//        Collection<GrantedAuthority> authorities = new ArrayList<>();
-//        authorities.add(simpleAuthority);
-
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_"+user.getUserRole().toString()));
-
         return authorities;
     }
 }

@@ -1,5 +1,6 @@
 package com.toletter.Service;
 
+import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
 import com.toletter.Entity.User;
@@ -8,6 +9,7 @@ import com.toletter.Enums.UserRole;
 import com.toletter.Error.*;
 import com.toletter.JWT.*;
 import com.toletter.Repository.*;
+import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.Jwt.RedisJwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -52,75 +54,73 @@ public class UserService {
             throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
-        // 카카오 로그인인지 로컬 로그인인지 구분
-        if(userSignupRequest.getLoginType().equals(LoginType.kakaoLogin)){
-            user.setSecondConfirmed(true);
-        } else if (userSignupRequest.getLoginType().equals(LoginType.localLogin)) {
-            // 비밀번호 암호화
-            user.setPassword(passwordEncoder.encode(userSignupRequest.getPassword()));
-            user.setSecondConfirmed(false);
-        }
+        // 비밀번호 암호화
+        user.setPassword(passwordEncoder.encode(userSignupRequest.getPassword()));
+        user.setSecondConfirmed(false);
         user.setUserRole(UserRole.User);
         userRepository.save(user);
     }
 
     // 로그인
-    public UserLoginResponse login(UserLoginRequest userLoginRequest, HttpServletResponse httpServletResponse){
+    public ResponseDTO login(UserLoginRequest userLoginRequest, HttpServletResponse httpServletResponse){
         // 아이디가 존재하지 않으면
         if(!userRepository.existsByEmail(userLoginRequest.getEmail())){
-            return UserLoginResponse.res("400", "로그인 실패 / 이메일 없음");
+            return ResponseDTO.res(400, "로그인 실패 / 이메일 없음", "");
         }
         User user = userRepository.findByEmail(userLoginRequest.getEmail()).orElseThrow();
 
         // 비밀번호 틀리면
         if(!passwordEncoder.matches(userLoginRequest.getPassword(), user.getPassword())){
-            return UserLoginResponse.res("401", "로그인 실패 / 비밀번호 틀림");
+            return ResponseDTO.res(401, "로그인 실패 / 비밀번호 틀림", "");
         }
         // 2차 인증 안하면
         if(!user.isSecondConfirmed()){
-            return UserLoginResponse.res("403", "로그인 실패 / 2차 인증 안됨");
+            return ResponseDTO.res(403, "로그인 실패 / 2차 인증 안됨", "");
         }
         this.setJwtTokenInHeader(userLoginRequest.getEmail(), user.getUserRole(), httpServletResponse);
-        return UserLoginResponse.res("200", "로그인 성공");
+        return ResponseDTO.res(200, "로그인 성공", "");
     }
 
     // 유저 정보 보여주기
-    public UserViewResponse viewUser(HttpServletRequest httpServletRequest){
-        User user = this.findUserByToken(httpServletRequest);
-        return  UserViewResponse.res(user.getAddress(), user.getNickname(), user.getEmail());
+    public ResponseDTO viewUser(CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
+
+        return  ResponseDTO.res(200, "유저 정보 보여주기 성공", UserViewResponse.res(user.getAddress(), user.getNickname(), user.getEmail()));
     }
 
     // 유저 정보 수정
     @Transactional
-    public UserUpdateResponse updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest httpServletRequest){
-        User user = this.findUserByToken(httpServletRequest);
+    public ResponseDTO updateUser(UserUpdateRequest userUpdateRequest, CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
         user.updateUser(userUpdateRequest);
         userRepository.save(user);
-        return UserUpdateResponse.res("200", "수정 완료",  user.getEmail(), user.getNickname(), user.getAddress());
+        UserUpdateResponse userUpdateResponse = UserUpdateResponse.res(user.getEmail(), user.getNickname(), user.getAddress());
+        return ResponseDTO.res(200, "유저 정보 수정 성공", userUpdateResponse);
     }
 
     // 로그아웃
-    public void logout(HttpServletRequest httpServletRequest){
-        alarmService.delete(this.findUserByToken(httpServletRequest).getNickname());
-        redisJwtService.deleteValues(findUserByToken(httpServletRequest).getEmail());
-        jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
+    public void logout(CustomUserDetails userDetails){
+        User user =  userDetails.getUser();
+        alarmService.delete(user.getNickname());
+        redisJwtService.deleteValues(user.getEmail());
+        //jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
     }
 
     // 유저 탈퇴
-    public UserDeleteResponse userDelete(UserDeleteRequest userDeleteRequest, HttpServletRequest httpServletRequest){
+    public ResponseDTO userDelete(UserDeleteRequest userDeleteRequest, CustomUserDetails userDetails){
         // 유저의 아이디가 존재하지 않으면
         if(!userRepository.existsByEmail(userDeleteRequest.getEmail())){
-            return UserDeleteResponse.res("401", "유저 이메일이 없음.");
+            return ResponseDTO.res(401, "유저 이메일이 없음.", "");
         }
-        User user = userRepository.findByEmail(userDeleteRequest.getEmail()).orElseThrow();
+        User user =  userDetails.getUser();
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
-            return UserDeleteResponse.res("401", "비밀번호가 틀림");
+            return ResponseDTO.res(400, "비밀번호가 틀림", "");
         }
         alarmService.delete(user.getNickname());
         redisJwtService.deleteValues(userDeleteRequest.getEmail());
-        jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
+        //jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
         userRepository.delete(user);
-        return UserDeleteResponse.res("200", "탈퇴 성공");
+        return ResponseDTO.res(200, "탈퇴 성공", "");
     }
 
     // 토큰 헤더에 저장
@@ -132,11 +132,4 @@ public class UserService {
         jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
         redisJwtService.setValues(email, refreshToken);
     }
-
-    // 토큰에서 유저 정보 가져오기
-    public User findUserByToken(HttpServletRequest request) {
-        String email = jwtTokenProvider.getUserEmail(jwtTokenProvider.resolveAccessToken(request));
-        return userRepository.findByEmail(email).orElseThrow();
-    }
-
 }

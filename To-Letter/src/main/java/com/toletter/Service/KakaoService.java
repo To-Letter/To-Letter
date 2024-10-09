@@ -1,16 +1,16 @@
 package com.toletter.Service;
 
+import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.user.KaKaoDTO;
 import com.toletter.DTO.user.Request.UserKaKaoSignupRequest;
 import com.toletter.DTO.user.Request.UserKaKaoUpdateRequest;
-import com.toletter.DTO.user.Response.UserKaKaoLoginResponse;
 import com.toletter.Entity.User;
 import com.toletter.Enums.LoginType;
 import com.toletter.Enums.UserRole;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
-import com.toletter.JWT.JwtTokenProvider;
 import com.toletter.Repository.UserRepository;
+import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.Jwt.RedisJwtService;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
@@ -24,7 +24,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,9 +34,6 @@ public class KakaoService {
     @Value("${kakao.apiKey}")
     String kakaoApiKey;
 
-    @Value("${kakao.adminKey}")
-    String kakaoAdminKey;
-
     @Value("${kakao.redirectUrl}")
     String redirectUrl;
 
@@ -47,14 +43,13 @@ public class KakaoService {
     String unLinkUrl = "https://kapi.kakao.com/v1/user/unlink";
     private final UserRepository userRepository;
     private final UserService userService;
-    private  final JwtTokenProvider jwtTokenProvider;
     private final RedisJwtService redisJwtService;
     private final AlarmService alarmService;
 
-    public String getAuthCode(){
+    public ResponseDTO getAuthCode(){
         StringBuffer url = new StringBuffer();
         url.append(authUrl) .append("client_id="+kakaoApiKey).append("&redirect_uri="+redirectUrl).append("&response_type=code");
-        return url.toString();
+        return ResponseDTO.res(200, "url 전달 성공",url.toString());
     }
 
     // 토큰 발급하기
@@ -109,7 +104,7 @@ public class KakaoService {
     }
 
     // 회원가입 혹은 로그인 처리
-    public UserKaKaoLoginResponse getUserInfo(Map token, HttpServletResponse httpServletResponse) throws ParseException {
+    public ResponseDTO getUserInfo(Map token, HttpServletResponse httpServletResponse) throws ParseException {
         //access_token을 이용하여 사용자 정보 조회
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token.get("access_Token").toString());
@@ -139,7 +134,7 @@ public class KakaoService {
                 // 만약, 이미 회원가입이 된 카카오톡 유저라면
                 if(user.getLoginType().equals(LoginType.kakaoLogin)){
                     userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
-                    return UserKaKaoLoginResponse.res("201", "로그인 성공", kakaoUser);
+                    return ResponseDTO.res(201, "로그인 성공", kakaoUser);
                 } else if (user.getLoginType().equals(LoginType.localLogin)) {
                     throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", ErrorCode.FORBIDDEN_EXCEPTION);
                 }
@@ -152,7 +147,7 @@ public class KakaoService {
         User newUser = userKaKaoSignupRequest.toEntity();
         userRepository.save(newUser);
 
-        return UserKaKaoLoginResponse.res("200", "회원가입 성공", kakaoUser);
+        return ResponseDTO.res(200, "회원가입 성공", kakaoUser);
     }
 
     public ResponseEntity<String> kakaoSignup(UserKaKaoUpdateRequest userKaKaoUpdateRequest){
@@ -167,7 +162,7 @@ public class KakaoService {
         return ResponseEntity.ok("카카오 회원가입 성공");
     }
 
-    public void userKaKaoDelete(Map token, HttpServletRequest httpServletRequest) throws ParseException {
+    public void userKaKaoDelete(Map token, CustomUserDetails userDetails) throws ParseException {
         //access_token을 이용하여 사용자 정보 조회
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token.get("access_Token").toString());
@@ -183,7 +178,7 @@ public class KakaoService {
         );
 
         if(response.getStatusCode().equals(HttpStatus.OK)){
-            User user = userService.findUserByToken(httpServletRequest);
+            User user = userDetails.getUser();
 
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
@@ -193,13 +188,12 @@ public class KakaoService {
             if(user.getLoginType().equals(LoginType.kakaoLogin) && user.getKakaoId().equals(userId)){
                 alarmService.delete(user.getNickname());
                 redisJwtService.deleteValues(user.getEmail());
-                jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
+                //jwtTokenProvider.expireToken(jwtTokenProvider.resolveAccessToken(httpServletRequest));
                 userRepository.delete(user);
             }
 
         } else {
             throw new ErrorException(response.getStatusCode()+"카카오 유저 탈퇴 실패", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
-
     }
 }

@@ -1,6 +1,7 @@
 package com.toletter.JWT;
 
 import com.toletter.Entity.User;
+import com.toletter.Enums.JwtErrorCode;
 import com.toletter.Enums.UserRole;
 import com.toletter.Repository.UserRepository;
 import com.toletter.Error.*;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.*;
+import java.io.IOException;
 import java.security.Key;
 import java.util.*;
 
@@ -83,17 +85,6 @@ public class JwtTokenProvider {
         return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 
-    // 토큰에서 만료 시간 추출
-    public Date getExpireDate(String refreshToken){
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(refreshToken)
-                .getBody();
-        return claims.getExpiration();
-    }
-
     // accessToken 재발행
     public String reissueAccessToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
@@ -105,7 +96,7 @@ public class JwtTokenProvider {
     }
 
     // refreshToken 재발급
-    public String reissueRefreshToken(String refreshToken) {
+    public String reissueRefreshToken(String newAccessToken, String refreshToken) {
         String email = this.getUserEmail(refreshToken);
 
         if (!redisJwtService.isValid(email)) {
@@ -121,7 +112,7 @@ public class JwtTokenProvider {
         String newRefreshToken = createRefreshToken(email, user.get().getUserRole());
 
         redisJwtService.deleteValues(email);
-        redisJwtService.setValues(email, newRefreshToken);
+        redisJwtService.setValues(email, newAccessToken, newRefreshToken);
 
         return newRefreshToken;
     }
@@ -142,29 +133,42 @@ public class JwtTokenProvider {
     }
 
     // Token 만료
-    public void expireToken(String token) {
+    public void expireToken(HttpServletRequest httpServletRequest) {
+        String accessToken = this.resolveAccessToken(httpServletRequest);
+        String refreshToken = this.resolveRefreshToken(httpServletRequest);
+
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(accessToken)
                 .getBody();
         Date expiration = claims.getExpiration();
         Date now = new Date();
-        if (now.after(expiration)) {
-            redisJwtService.deleteValues(this.getUserEmail(token));
-        }
+        redisJwtService.setBlackList(accessToken, refreshToken, (expiration.getTime()-now.getTime()));
     }
 
-    // 토큰의 유효성 + 만료일자 확인
-    public boolean validateToken(String jwtToken) {
-        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        Jws<Claims> claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(jwtToken);
+    // 토큰의 유효성
+    public boolean validateToken(HttpServletResponse response, String jwtToken) throws IOException {
+        try{
+            Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(jwtToken);
 
-        return !claims.getBody().getExpiration().before(new Date());
+        } catch (SignatureException | MalformedJwtException e) {
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.INVALID_TOKEN,e.getMessage());
+        } catch (ExpiredJwtException e) {
+            return false;
+        } catch (UnsupportedJwtException e) {
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN,e.getMessage());
+        } catch (IllegalArgumentException e) {
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN,e.getMessage());
+        } catch (Exception e) {
+            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TOKEN,e.getMessage());
+        }
+        return true;
     }
 
     // 어세스 토큰 헤더 설정

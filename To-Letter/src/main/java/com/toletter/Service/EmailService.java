@@ -1,8 +1,8 @@
 package com.toletter.Service;
 
+import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.auth.Request.EmailSaveRequest;
 import com.toletter.DTO.auth.Request.EmailVerifyRequest;
-import com.toletter.DTO.auth.Response.EmailVerifyResponse;
 import com.toletter.Entity.Auth;
 import com.toletter.Entity.User;
 import com.toletter.Error.ErrorCode;
@@ -86,7 +86,7 @@ public class EmailService {
     }
 
     // 2차 인증 검증
-    public EmailVerifyResponse verifyEmail(EmailVerifyRequest emailVerifyRequest) {
+    public ResponseDTO verifyEmail(EmailVerifyRequest emailVerifyRequest) {
         Auth auth = authRepository.findByEmail(emailVerifyRequest.getEmail()).orElseThrow();
 
         // 현재 시각 가져오기
@@ -95,17 +95,17 @@ public class EmailService {
         // 이메일 인증 제한 시간 5분 지정
         if(currentDateTime.isAfter(auth.getCreatedDate().plusMinutes(5))){
             authRepository.deleteByEmail(auth.getEmail());
-            return EmailVerifyResponse.res("401","이메일 인증 실패 / 시간 초과");
+            return ResponseDTO.res(401,"이메일 인증 실패 / 시간 초과", "");
         }
         if(!emailVerifyRequest.getRandomCode().equals(auth.getRandomCode())){
-            return EmailVerifyResponse.res("403","이메일 인증 실패 / 랜덤 코드 불일치");
+            return ResponseDTO.res(403,"이메일 인증 실패 / 랜덤 코드 불일치", "");
         }
         // 인증 성공 시
         authRepository.deleteByEmail(auth.getEmail());
         User user = userRepository.findByEmail(emailVerifyRequest.getEmail()).orElseThrow();
         user.setSecondConfirmed(true);
         userRepository.save(user);
-        return EmailVerifyResponse.res("200", "이메일 인증 성공");
+        return ResponseDTO.res(200, "이메일 인증 성공", "");
     }
 
 }

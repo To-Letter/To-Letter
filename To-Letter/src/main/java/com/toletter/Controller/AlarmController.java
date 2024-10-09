@@ -1,22 +1,19 @@
 package com.toletter.Controller;
 
 import com.toletter.Service.AlarmService;
-import com.toletter.Service.UserService;
+import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Entity.User;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import javax.servlet.http.HttpServletRequest;
-
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/alarm")
 public class AlarmController {
     private final AlarmService alarmService;
-    private final UserService userService;
 
     // 메시지 알림
     @ApiResponses( value ={
@@ -27,8 +24,8 @@ public class AlarmController {
     })
     @ApiOperation(value = "실시간 알람 연결")
     @GetMapping("/connect")
-    public SseEmitter subscribe(HttpServletRequest request) {
-        User user = userService.findUserByToken(request);
+    public SseEmitter subscribe(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user =  userDetails.getUser();
 
         return alarmService.connect(user.getNickname());
     }
