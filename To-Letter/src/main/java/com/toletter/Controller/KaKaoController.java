@@ -40,15 +40,15 @@ public class KaKaoController {
     })
     @ApiOperation(value = "카카오 유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/su/signup")
-    public ResponseEntity<String> userKakaoSignUp(@RequestBody UserKaKaoUpdateRequest userKaKaoUpdateRequest) {
-        kakaoService.kakaoSignup(userKaKaoUpdateRequest);
-        return ResponseEntity.ok("회원가입 성공");
+    public ResponseDTO userKakaoSignUp(@RequestBody UserKaKaoUpdateRequest userKaKaoUpdateRequest) {
+        return kakaoService.kakaoSignup(userKaKaoUpdateRequest);
     }
 
     // 카카오 로그인
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "카카오 회원가입 성공"),
             @ApiResponse(code = 201, message = "카카오 로그인 성공/이미 회원가입 된 유저라 바로 로그인 처리"),
+            @ApiResponse(code = 400, message = "카카오 로그인 실패/ 2차 회원가입(닉네임, 주소)이 제대로 진행이 되지 않음."),
             @ApiResponse(code = 401, message = "인증 실패함. / 토큰이 이상하거나 만료됨."),
             @ApiResponse(code = 403, message = "카카오 회원가입 실패/동일한 이메일 존재"),
             @ApiResponse(code = 404, message = "카카오 토큰이 발급이 안됨."),
