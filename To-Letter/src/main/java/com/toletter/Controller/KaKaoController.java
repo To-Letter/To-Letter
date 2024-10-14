@@ -36,7 +36,8 @@ public class KaKaoController {
     // 카카오 회원가입
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "카카오 회원가입 성공"),
-            @ApiResponse(code = 401, message = "같은 이메일/닉네임 존재")
+            @ApiResponse(code = 401, message = "카카오 회원가입 실패/유저가 다름"),
+            @ApiResponse(code = 403, message = "카카오 회원가입 실패/로컬 유저")
     })
     @ApiOperation(value = "카카오 유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/su/signup")
