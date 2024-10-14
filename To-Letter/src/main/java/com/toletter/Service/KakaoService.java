@@ -138,7 +138,7 @@ public class KakaoService {
                 if(user.getLoginType().equals(LoginType.kakaoLogin)){
                     userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
                     return ResponseDTO.res(201, "로그인 성공", kakaoUser);
-                } else if(user.getNickname().isEmpty() || user.getAddress().isEmpty()){
+                } else if(user.getNickname().isEmpty() && user.getAddress().isEmpty()){
                     throw new ErrorException("로그인 실패, 2차 회원가입이 제대로 해결되지 않음.", ErrorCode.RUNTIME_EXCEPTION);
                 } else if (user.getLoginType().equals(LoginType.localLogin)) {
                     throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", ErrorCode.FORBIDDEN_EXCEPTION);
@@ -160,6 +160,9 @@ public class KakaoService {
 
         if(!userKaKaoUpdateRequest.getEmail().equals(user.getEmail())){
             throw new ErrorException("카카오 회원가입 실패/유저가 다름", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        }
+        if(user.getLoginType().equals(LoginType.localLogin)){
+            throw new ErrorException("카카오 회원가입 실패/로컬 유저", ErrorCode.FORBIDDEN_EXCEPTION);
         }
         user.updateKakaoUser(userKaKaoUpdateRequest);
         userRepository.save(user);
