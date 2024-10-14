@@ -134,7 +134,7 @@ public class KakaoService {
             if(userRepository.existsByEmail(kakaoUser.getEmail())){
                 User user = userRepository.findByEmail(kakaoUser.getEmail()).orElseThrow();
 
-                if(user.getNickname().isEmpty() && user.getAddress().isEmpty()){
+                if(!user.isSecondConfirmed()){
                     throw new ErrorException("로그인 실패, 2차 회원가입이 제대로 해결되지 않음.", ErrorCode.RUNTIME_EXCEPTION);
                 }
                 if (user.getLoginType().equals(LoginType.localLogin)) {
@@ -147,7 +147,7 @@ public class KakaoService {
         } else {
             throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
-        UserKaKaoSignupRequest userKaKaoSignupRequest = new UserKaKaoSignupRequest(kakaoUser.getEmail(), kakaoUser.getUserId(), LoginType.kakaoLogin, true, UserRole.User);
+        UserKaKaoSignupRequest userKaKaoSignupRequest = new UserKaKaoSignupRequest(kakaoUser.getEmail(), kakaoUser.getUserId(), LoginType.kakaoLogin, false, UserRole.User);
 
         User newUser = userKaKaoSignupRequest.toEntity();
         userRepository.save(newUser);
@@ -165,6 +165,7 @@ public class KakaoService {
             throw new ErrorException("카카오 회원가입 실패/로컬 유저", ErrorCode.FORBIDDEN_EXCEPTION);
         }
         user.updateKakaoUser(userKaKaoUpdateRequest);
+        user.setSecondConfirmed(true);
         userRepository.save(user);
 
         return ResponseDTO.res(200, "카카오 회원가입 성공", "");
