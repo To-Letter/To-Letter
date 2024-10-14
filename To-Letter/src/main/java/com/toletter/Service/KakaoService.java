@@ -134,14 +134,14 @@ public class KakaoService {
             if(userRepository.existsByEmail(kakaoUser.getEmail())){
                 User user = userRepository.findByEmail(kakaoUser.getEmail()).orElseThrow();
 
-                // 만약, 이미 회원가입이 된 카카오톡 유저라면
-                if(user.getLoginType().equals(LoginType.kakaoLogin)){
+                if(user.getNickname().isEmpty() && user.getAddress().isEmpty()){
+                    throw new ErrorException("로그인 실패, 2차 회원가입이 제대로 해결되지 않음.", ErrorCode.RUNTIME_EXCEPTION);
+                }
+                if (user.getLoginType().equals(LoginType.localLogin)) {
+                    throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", ErrorCode.FORBIDDEN_EXCEPTION);
+                } else if(user.getLoginType().equals(LoginType.kakaoLogin)){// 만약, 이미 회원가입이 된 카카오톡 유저라면
                     userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
                     return ResponseDTO.res(201, "로그인 성공", kakaoUser);
-                } else if(user.getNickname().isEmpty() && user.getAddress().isEmpty()){
-                    throw new ErrorException("로그인 실패, 2차 회원가입이 제대로 해결되지 않음.", ErrorCode.RUNTIME_EXCEPTION);
-                } else if (user.getLoginType().equals(LoginType.localLogin)) {
-                    throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", ErrorCode.FORBIDDEN_EXCEPTION);
                 }
             }
         } else {
