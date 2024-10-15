@@ -28,8 +28,7 @@ public class UserController {
     @ApiOperation(value = "이메일 중복 확인", notes = "토큰 필요 없음")
     @GetMapping("/su/confirmEmail")
     public ResponseDTO confirmEmail(@RequestParam String userEmail) {
-        userService.confirmEmail(userEmail);
-        return ResponseDTO.res(200, "이메일 중복 없음", "");
+        return userService.confirmEmail(userEmail);
     }
 
     // 닉네임 중복 확인
@@ -40,8 +39,7 @@ public class UserController {
     @ApiOperation(value = "닉네임 중복 확인", notes = "토큰 필요 없음")
     @GetMapping("/su/confirmNickname")
     public ResponseDTO confirmNickname(@RequestParam String userNickname) {
-        userService.confirmNickname(userNickname);
-        return ResponseDTO.res(200, "닉네임 중복 없음", "");
+        return userService.confirmNickname(userNickname);
     }
 
     // 회원가입
@@ -52,8 +50,7 @@ public class UserController {
     @ApiOperation(value = "유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/su/signup")
     public ResponseDTO userSignUp(@RequestBody UserSignupRequest userSignupRequest) {
-        userService.signup(userSignupRequest);
-        return ResponseDTO.res(200, "회원가입 성공", "");
+        return userService.signup(userSignupRequest);
     }
 
     // 로그인
@@ -120,8 +117,7 @@ public class UserController {
     @ApiOperation(value = "로그아웃")
     @GetMapping("/logout")
     public ResponseDTO updateUser(HttpServletRequest httpServletRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        userService.logout(httpServletRequest, userDetails);
-        return ResponseDTO.res(200, "로그아웃 성공", "");
+        return userService.logout(httpServletRequest, userDetails);
     }
 
     // 2차 인증
@@ -133,8 +129,7 @@ public class UserController {
     @ApiOperation(value = "2차 인증", notes = "토큰 필요 없음")
     @GetMapping ("/email/auth")
     public ResponseDTO emailAuth(@RequestParam String toEmail) throws Exception {
-        emailService.sendEmail(toEmail);
-        return ResponseDTO.res(200, "2차 인증 메일 전송 성공", "");
+        return emailService.sendEmail(toEmail);
     }
 
     // 이메일 인증 검증

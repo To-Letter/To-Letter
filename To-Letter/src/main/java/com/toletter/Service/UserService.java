@@ -4,9 +4,7 @@ import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
 import com.toletter.Entity.User;
-import com.toletter.Enums.LoginType;
 import com.toletter.Enums.UserRole;
-import com.toletter.Error.*;
 import com.toletter.JWT.*;
 import com.toletter.Repository.*;
 import com.toletter.Service.Jwt.CustomUserDetails;
@@ -28,30 +26,32 @@ public class UserService {
     private final AlarmService alarmService;
 
     // 아이디 중복 확인
-    public void confirmEmail(String userEmail){
+    public ResponseDTO confirmEmail(String userEmail){
         if(userRepository.existsByEmail(userEmail)){
-            throw new ErrorException("같은 이메일이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "이메일 중복", "");
         }
+        return ResponseDTO.res(200, "이메일 중복 없음", "");
     }
 
     // 닉네임 중복 확인
-    public void confirmNickname(String userNickname){
+    public ResponseDTO confirmNickname(String userNickname){
         if(userRepository.existsByNickname(userNickname)){
-            throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "닉네임 중복", "");
         }
+        return ResponseDTO.res(200, "닉네임 중복 없음", "");
     }
 
     // 회원가입
     @Transactional
-    public void signup(UserSignupRequest userSignupRequest){
+    public ResponseDTO signup(UserSignupRequest userSignupRequest){
         User user = userSignupRequest.toEntity();
 
         if(userRepository.existsByEmail(userSignupRequest.getEmail())){
-            throw new ErrorException("같은 이메일이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "같은 이메일이 존재", "");
         }
 
         if(userRepository.existsByNickname(userSignupRequest.getNickname())){
-            throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "같은 닉네임이 존재", "");
         }
 
         // 비밀번호 암호화
@@ -59,6 +59,7 @@ public class UserService {
         user.setSecondConfirmed(false);
         user.setUserRole(UserRole.User);
         userRepository.save(user);
+        return ResponseDTO.res(200, "회원가입 성공", "");
     }
 
     // 로그인
@@ -99,11 +100,12 @@ public class UserService {
     }
 
     // 로그아웃
-    public void logout(HttpServletRequest httpServletRequest, CustomUserDetails userDetails){
+    public ResponseDTO logout(HttpServletRequest httpServletRequest, CustomUserDetails userDetails){
         User user =  userDetails.getUser();
         alarmService.delete(user.getNickname());
         redisJwtService.deleteValues(user.getEmail());
         jwtTokenProvider.expireToken(httpServletRequest);
+        return ResponseDTO.res(200, "로그아웃 성공", "");
     }
 
     // 유저 탈퇴

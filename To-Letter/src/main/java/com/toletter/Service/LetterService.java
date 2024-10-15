@@ -33,7 +33,7 @@ public class LetterService {
     private final AlarmService alarmService;
 
     // 메일 보내기
-    public void sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails){
+    public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails){
         Letter letter = sendLetterRequest.toEntity();
         User fromUser =  userDetails.getUser(); // 보내는 유저
         User toUser = userRepository.findByNickname((letter.getToUserNickname())).orElseThrow(() -> new ErrorException("유저 없음.", ErrorCode.FORBIDDEN_EXCEPTION)); // 받는 유저
@@ -75,6 +75,7 @@ public class LetterService {
 
         // 알림 보내기
         alarmService.scheduleTask(toUser.getNickname(), letter, arrivedDay);
+        return ResponseDTO.res(200, "메일 보내기 성공", "");
     }
 
     // 모든 받은 메일함 열기
@@ -132,7 +133,7 @@ public class LetterService {
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
 
         if(!user.getNickname().equals(letter.getToUserNickname())){
-            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
 
         return ResponseDTO.res(200, "메일 읽기 성공", LetterDTO.toDTO(letter));
@@ -144,7 +145,7 @@ public class LetterService {
         User user = userDetails.getUser();
 
         if(!user.getNickname().equals(letter.getToUserNickname())){
-            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
         letter.updateViewCheck();
         letterRepository.save(letter);
@@ -173,7 +174,7 @@ public class LetterService {
         Letter letter = sentBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
 
         if(!user.getNickname().equals(letter.getFromUserNickname())){
-            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
         return ResponseDTO.res(200, "보낸 메일 읽기 성공", LetterDTO.toDTO(letter));
     }
@@ -184,7 +185,7 @@ public class LetterService {
         ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
 
         if(!receivedBox.getUserNickname().equals(user.getNickname())){
-            throw new ErrorException("메일의 소유주가 다릅니다. ", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
         receivedBoxRepository.delete(receivedBox);
         return ResponseDTO.res(200, "메일 삭제 성공", "");

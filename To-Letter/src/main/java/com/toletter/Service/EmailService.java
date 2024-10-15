@@ -51,12 +51,12 @@ public class EmailService {
     }
 
     // 메일 보내기
-    public void sendEmail(String toEmail) throws Exception {
+    public ResponseDTO sendEmail(String toEmail) throws Exception {
         if(userRepository.findByEmail(toEmail).get().isSecondConfirmed()){
-            throw new ErrorException("2차 인증을 완료했습니다.", ErrorCode.FORBIDDEN_EXCEPTION);
+            return ResponseDTO.res(403, "2차 인증을 완료", "");
         }
         if(authRepository.existsByEmail(toEmail)){
-            throw new ErrorException("이미 인증 메일을 보냈습니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "이미 인증 메일을 보냈습니다.", "");
         }
 
         String randomCode = createCode(); //인증 코드 생성
@@ -72,6 +72,7 @@ public class EmailService {
 
         // 데베에 저장
         this.saveDB(toEmail, randomCode);
+        return ResponseDTO.res(200, "2차 인증 메일 전송 성공", "");
     }
 
     // 데베에 저장

@@ -18,6 +18,7 @@ public class LetterController {
     // 메일 보내기
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 보내기 성공"),
+            @ApiResponse(code = 401, message = "보낼 유저가 없음(유저가 존재하지 않음)"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
@@ -25,8 +26,7 @@ public class LetterController {
     @ApiOperation(value = "메일 보내기")
     @PostMapping("/send")
     public ResponseDTO sendLetter(@RequestBody SendLetterRequest sendLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        letterService.sendLetter(sendLetterRequest, userDetails);
-        return ResponseDTO.res(200, "메일 보내기 성공", "");
+        return letterService.sendLetter(sendLetterRequest, userDetails);
     }
 
     // 받은 모든 메일함 열기
