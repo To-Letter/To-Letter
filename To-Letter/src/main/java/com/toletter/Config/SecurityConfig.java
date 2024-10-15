@@ -28,6 +28,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 .antMatchers("/users/su/**", "/kakao/su/**", "/users/email/**", "/users/kakao").permitAll()
+                .antMatchers("/v2/api-docs", "/swagger-resources/**", "/ws/**", "/webjars/**", "/swagger-ui/**", "/webjars", "/favicon.ico").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .logout() // 로그아웃 설정
@@ -35,11 +36,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationTokenFilter.class)
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
-    }
-
-    @Override
-    public void configure(WebSecurity webSecurity){
-        webSecurity.ignoring().antMatchers("/v2/api-docs", "/swagger-resources/**",
-                "/ws/**", "/webjars/**", "/swagger-ui/**", "/webjars", "/favicon.ico");
     }
 }
