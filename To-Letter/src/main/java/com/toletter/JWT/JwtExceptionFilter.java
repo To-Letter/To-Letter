@@ -1,6 +1,7 @@
 package com.toletter.JWT;
 
 import com.toletter.Enums.JwtErrorCode;
+import com.toletter.Error.ErrorCode;
 import groovy.util.logging.Slf4j;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +25,11 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } catch (JwtException e){
-            logger.error(e.getMessage());
+            setErrorResponse(response, ErrorCode.UNAUTHORIZED_EXCEPTION, e.getMessage());
         }
     }
 
-    public static void setErrorResponse(HttpServletResponse response, JwtErrorCode code, String errorMessage) throws IOException {
+    public static void setTokenErrorResponse(HttpServletResponse response, JwtErrorCode code, String errorMessage) throws IOException {
         JSONObject json = new JSONObject();
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -36,6 +37,18 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         json.put("code", code.getCode());
         json.put("message", code.getMessage());
         json.put("error", errorMessage);
+
+        response.getWriter().print(json);
+    }
+
+    public static void setErrorResponse(HttpServletResponse response, ErrorCode code, String errorMessage) throws IOException {
+        JSONObject json = new JSONObject();
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(code.getCode());
+
+        json.put("responseCode", code.getCode());
+        json.put("responseStatus", code.getMessage());
+        json.put("responseMessage", errorMessage);
 
         response.getWriter().print(json);
     }

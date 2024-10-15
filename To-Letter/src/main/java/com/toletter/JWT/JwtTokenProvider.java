@@ -88,8 +88,8 @@ public class JwtTokenProvider {
     // accessToken 재발행
     public String reissueAccessToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
-        if (userRepository.existsByEmail(email)) {
-            throw new ErrorException("유저가 존재하지 않습니다.", 401, ErrorCode.UNAUTHORIZED_EXCEPTION);
+        if (!userRepository.existsByEmail(email)) {
+            throw new JwtException("유저가 존재하지 않습니다.");
         }
 
         return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
@@ -100,13 +100,13 @@ public class JwtTokenProvider {
         String email = this.getUserEmail(refreshToken);
 
         if (!redisJwtService.isValid(email)) {
-            throw new ErrorException("다시 로그인하세요.", 401, ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new JwtException("다시 로그인하세요.");
         }
 
         Optional<User> user = userRepository.findByEmail(email);
 
         if (user.isEmpty()) {
-            throw new ErrorException("유저가 존재하지 않습니다.", 401, ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new JwtException("유저가 존재하지 않습니다.");
         }
 
         String newRefreshToken = createRefreshToken(email, user.get().getUserRole());
@@ -159,15 +159,15 @@ public class JwtTokenProvider {
                     .parseClaimsJws(jwtToken);
 
         } catch (SignatureException | MalformedJwtException e) {
-            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.INVALID_TOKEN,e.getMessage());
+            JwtExceptionFilter.setTokenErrorResponse(response, JwtErrorCode.INVALID_TOKEN,e.getMessage());
         } catch (ExpiredJwtException e) {
             return false;
         } catch (UnsupportedJwtException e) {
-            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN,e.getMessage());
+            JwtExceptionFilter.setTokenErrorResponse(response, JwtErrorCode.UNSUPPORTED_TOKEN,e.getMessage());
         } catch (IllegalArgumentException e) {
-            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN,e.getMessage());
+            JwtExceptionFilter.setTokenErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN,e.getMessage());
         } catch (Exception e) {
-            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TOKEN,e.getMessage());
+            JwtExceptionFilter.setTokenErrorResponse(response, JwtErrorCode.WRONG_TOKEN,e.getMessage());
         }
         return true;
     }

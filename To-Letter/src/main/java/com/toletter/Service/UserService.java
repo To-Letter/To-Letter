@@ -30,14 +30,14 @@ public class UserService {
     // 아이디 중복 확인
     public void confirmEmail(String userEmail){
         if(userRepository.existsByEmail(userEmail)){
-            throw new ErrorException("같은 이메일이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("같은 이메일이 존재합니다.", 401,ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
     }
 
     // 닉네임 중복 확인
     public void confirmNickname(String userNickname){
         if(userRepository.existsByNickname(userNickname)){
-            throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("같은 닉네임이 존재합니다.", 401,ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
     }
 
@@ -47,11 +47,11 @@ public class UserService {
         User user = userSignupRequest.toEntity();
 
         if(userRepository.existsByEmail(userSignupRequest.getEmail())){
-            throw new ErrorException("같은 이메일이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("같은 이메일이 존재합니다.", 401,ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
         if(userRepository.existsByNickname(userSignupRequest.getNickname())){
-            throw new ErrorException("같은 닉네임이 존재합니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("같은 닉네임이 존재합니다.", 401,ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
         // 비밀번호 암호화

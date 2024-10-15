@@ -135,10 +135,10 @@ public class KakaoService {
                 User user = userRepository.findByEmail(kakaoUser.getEmail()).orElseThrow();
 
                 if(!user.isSecondConfirmed()){
-                    throw new ErrorException("로그인 실패, 2차 회원가입이 제대로 해결되지 않음.", ErrorCode.RUNTIME_EXCEPTION);
+                    throw new ErrorException("로그인 실패, 2차 회원가입이 제대로 해결되지 않음.", 401, ErrorCode.RUNTIME_EXCEPTION);
                 }
                 if (user.getLoginType().equals(LoginType.localLogin)) {
-                    throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", ErrorCode.FORBIDDEN_EXCEPTION);
+                    throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", 403, ErrorCode.FORBIDDEN_EXCEPTION);
                 } else if(user.getLoginType().equals(LoginType.kakaoLogin)){// 만약, 이미 회원가입이 된 카카오톡 유저라면
                     userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
                     return ResponseDTO.res(201, "로그인 성공", kakaoUser);
@@ -159,10 +159,10 @@ public class KakaoService {
         User user = userRepository.findByEmail(userKaKaoUpdateRequest.getEmail()).orElseThrow();
 
         if(!userKaKaoUpdateRequest.getEmail().equals(user.getEmail())){
-            throw new ErrorException("카카오 회원가입 실패/유저가 다름", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("카카오 회원가입 실패/유저가 다름", 401, ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         if(user.getLoginType().equals(LoginType.localLogin)){
-            throw new ErrorException("카카오 회원가입 실패/로컬 유저", ErrorCode.FORBIDDEN_EXCEPTION);
+            throw new ErrorException("카카오 회원가입 실패/로컬 유저", 403, ErrorCode.FORBIDDEN_EXCEPTION);
         }
         user.updateKakaoUser(userKaKaoUpdateRequest);
         user.setSecondConfirmed(true);
