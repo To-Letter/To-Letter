@@ -70,7 +70,6 @@ public class KaKaoController {
     @DeleteMapping("/delete")
     public ResponseDTO tokenKaKao(HttpServletRequest httpServletRequest, @RequestParam String code, @AuthenticationPrincipal CustomUserDetails userDetails) throws ParseException {
         Map token = kakaoService.getTokenUrl(code);
-        kakaoService.userKaKaoDelete(httpServletRequest, token, userDetails);
-        return ResponseDTO.res(200,"탈퇴 성공","");
+        return kakaoService.userKaKaoDelete(httpServletRequest, token, userDetails);
     }
 }

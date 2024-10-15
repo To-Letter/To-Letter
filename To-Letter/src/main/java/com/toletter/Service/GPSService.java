@@ -58,7 +58,7 @@ public class GPSService { // 거리 관련 기능
                 throw new RuntimeException(e);
             };
         } else {
-            throw new ErrorException( response.getStatusCode()+"카카오 정보가 주어지지 못했습니다.", ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new ErrorException( response.getStatusCode()+"카카오 정보가 주어지지 못했습니다.", 404, ErrorCode.NOT_FOUND_EXCEPTION);
         }
         return gpsMap;
     }

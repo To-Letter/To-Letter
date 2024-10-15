@@ -25,7 +25,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         System.out.println(path);
 
-        if (path.startsWith("/swagger-ui") || path.contains("/favicon.ico") || path.contains("/swagger-resources") || path.startsWith("/webjars") || path.startsWith("/ws") || path.contains("/v2/api-docs") || path.startsWith("/users/su") || path.startsWith("/users/email") || path.startsWith("/kakao/su")) {
+        if (path.startsWith("/swagger-ui") || path.contains("/favicon.ico") || path.contains("/swagger-resources") || path.startsWith("/webjars") || path.startsWith("/ws") || path.contains("/v2/api-docs") || path.startsWith("/users/su") || path.startsWith("/users/email") || path.startsWith("/kakao/su") || path.contains("/users/kakao")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,12 +46,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                     jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
                     this.setAuthentication(newAccessToken);
                 } else {
-                    JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN,"refreshToken 만료되었습니다. 다시 로그인하세요");
+                    JwtExceptionFilter.setTokenErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN,"refreshToken 만료되었습니다. 다시 로그인하세요");
                     return;
                 }
             }
         } else {
-            JwtExceptionFilter.setErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN,"빈 문자열입니다. 다시 로그인해주세요.");
+            JwtExceptionFilter.setTokenErrorResponse(response, JwtErrorCode.WRONG_TYPE_TOKEN,"빈 문자열입니다. 다시 로그인해주세요.");
             return;
         }
         filterChain.doFilter(request, response);

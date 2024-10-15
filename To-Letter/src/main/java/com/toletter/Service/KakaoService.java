@@ -94,7 +94,7 @@ public class KakaoService {
             refresh_Token = String.valueOf(jsonObj.get("refresh_token"));
             refresh_token_expires_in = String.valueOf(jsonObj.get("refresh_token_expires_in"));
         } else {
-            throw new ErrorException( response.getStatusCode()+"카카오 토큰이 발급이 안됩니다.", ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new ErrorException( response.getStatusCode()+"카카오 토큰이 발급이 안됩니다.", 404, ErrorCode.NOT_FOUND_EXCEPTION);
         }
 
         Map<String, Object> tokenMap = new HashMap<String, Object>();
@@ -135,17 +135,17 @@ public class KakaoService {
                 User user = userRepository.findByEmail(kakaoUser.getEmail()).orElseThrow();
 
                 if(!user.isSecondConfirmed()){
-                    throw new ErrorException("로그인 실패, 2차 회원가입이 제대로 해결되지 않음.", ErrorCode.RUNTIME_EXCEPTION);
+                    return ResponseDTO.res(400, "로그인 실패/2차 회원가입이 제대로 해결되지 않음.", "");
                 }
                 if (user.getLoginType().equals(LoginType.localLogin)) {
-                    throw new ErrorException("회원가입 실패, 동일한 이메일이 존재함. ", ErrorCode.FORBIDDEN_EXCEPTION);
+                    return ResponseDTO.res(403, "회원가입 실패/동일한 이메일이 존재함.", "");
                 } else if(user.getLoginType().equals(LoginType.kakaoLogin)){// 만약, 이미 회원가입이 된 카카오톡 유저라면
                     userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
                     return ResponseDTO.res(201, "로그인 성공", kakaoUser);
                 }
             }
         } else {
-            throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", 401 ,ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         UserKaKaoSignupRequest userKaKaoSignupRequest = new UserKaKaoSignupRequest(kakaoUser.getEmail(), kakaoUser.getUserId(), LoginType.kakaoLogin, false, UserRole.User);
 
@@ -159,10 +159,10 @@ public class KakaoService {
         User user = userRepository.findByEmail(userKaKaoUpdateRequest.getEmail()).orElseThrow();
 
         if(!userKaKaoUpdateRequest.getEmail().equals(user.getEmail())){
-            throw new ErrorException("카카오 회원가입 실패/유저가 다름", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            return ResponseDTO.res(401, "카카오 회원가입 실패/유저가 다름", "");
         }
         if(user.getLoginType().equals(LoginType.localLogin)){
-            throw new ErrorException("카카오 회원가입 실패/로컬 유저", ErrorCode.FORBIDDEN_EXCEPTION);
+            return ResponseDTO.res(403, "카카오 회원가입 실패/로컬 유저", "");
         }
         user.updateKakaoUser(userKaKaoUpdateRequest);
         user.setSecondConfirmed(true);
@@ -171,7 +171,7 @@ public class KakaoService {
         return ResponseDTO.res(200, "카카오 회원가입 성공", "");
     }
 
-    public void userKaKaoDelete(HttpServletRequest httpServletRequest, Map token, CustomUserDetails userDetails) throws ParseException {
+    public ResponseDTO userKaKaoDelete(HttpServletRequest httpServletRequest, Map token, CustomUserDetails userDetails) throws ParseException {
         //access_token을 이용하여 사용자 정보 조회
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token.get("access_Token").toString());
@@ -200,9 +200,9 @@ public class KakaoService {
                 jwtTokenProvider.expireToken(httpServletRequest);
                 userRepository.delete(user);
             }
-
+            return ResponseDTO.res(200,"탈퇴 성공","");
         } else {
-            throw new ErrorException(response.getStatusCode()+"카카오 유저 탈퇴 실패", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException(response.getStatusCode()+"카카오 유저 탈퇴 실패", 401, ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
     }
 }
