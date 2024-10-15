@@ -94,7 +94,7 @@ public class KakaoService {
             refresh_Token = String.valueOf(jsonObj.get("refresh_token"));
             refresh_token_expires_in = String.valueOf(jsonObj.get("refresh_token_expires_in"));
         } else {
-            throw new ErrorException( response.getStatusCode()+"카카오 토큰이 발급이 안됩니다.", ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new ErrorException( response.getStatusCode()+"카카오 토큰이 발급이 안됩니다.", 404, ErrorCode.NOT_FOUND_EXCEPTION);
         }
 
         Map<String, Object> tokenMap = new HashMap<String, Object>();
@@ -145,7 +145,7 @@ public class KakaoService {
                 }
             }
         } else {
-            throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", 401 ,ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         UserKaKaoSignupRequest userKaKaoSignupRequest = new UserKaKaoSignupRequest(kakaoUser.getEmail(), kakaoUser.getUserId(), LoginType.kakaoLogin, false, UserRole.User);
 
@@ -202,7 +202,7 @@ public class KakaoService {
             }
 
         } else {
-            throw new ErrorException(response.getStatusCode()+"카카오 유저 탈퇴 실패", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException(response.getStatusCode()+"카카오 유저 탈퇴 실패", 401, ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
     }
 }

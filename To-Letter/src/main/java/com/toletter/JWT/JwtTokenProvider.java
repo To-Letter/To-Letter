@@ -88,8 +88,8 @@ public class JwtTokenProvider {
     // accessToken 재발행
     public String reissueAccessToken(String refreshToken) {
         String email = this.getUserEmail(refreshToken);
-        if (email == null) {
-            throw new ErrorException("유저가 존재하지 않습니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+        if (userRepository.existsByEmail(email)) {
+            throw new ErrorException("유저가 존재하지 않습니다.", 401, ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
         return createAccessToken(email, userRepository.findByEmail(email).get().getUserRole());
@@ -100,13 +100,13 @@ public class JwtTokenProvider {
         String email = this.getUserEmail(refreshToken);
 
         if (!redisJwtService.isValid(email)) {
-            throw new ErrorException("다시 로그인하세요.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("다시 로그인하세요.", 401, ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
 
         Optional<User> user = userRepository.findByEmail(email);
 
         if (user.isEmpty()) {
-            throw new ErrorException("유저가 존재하지 않습니다.", ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new ErrorException("유저가 존재하지 않습니다.", 401, ErrorCode.NOT_FOUND_EXCEPTION);
         }
 
         String newRefreshToken = createRefreshToken(email, user.get().getUserRole());
@@ -119,16 +119,17 @@ public class JwtTokenProvider {
 
     // Request의 Header에서 AccessToken 값을 가져옵니다. "authorization" : "token"
     public String resolveAccessToken(HttpServletRequest request) {
-        if(request.getHeader("Authorization") != null )
+        if(!request.getHeader("Authorization").isEmpty()){
             return request.getHeader("Authorization").substring(7);
-
+        }
         return null;
     }
 
     // Request의 Header에서 RefreshToken 값을 가져옵니다. "refreshToken" : "token"
     public String resolveRefreshToken(HttpServletRequest request) {
-        if(request.getHeader("refreshToken") != null )
+        if(!request.getHeader("refreshToken").isEmpty() ){
             return request.getHeader("refreshToken").substring(7);
+        }
         return null;
     }
 

@@ -7,17 +7,17 @@ import org.springframework.http.ResponseEntity;
 @Data
 @Builder
 public class ErrorResponseEntity {
-    private int status;
-    private String code;
-    private String message;
+    private int responseCode;
+    private String responseStatus;
+    private String responseMessage;
 
-    public static ResponseEntity<ErrorResponseEntity> toResponseEntity(String message, ErrorCode e){
+    public static ResponseEntity<ErrorResponseEntity> toResponseEntity(int responseCode ,String message, ErrorCode e){
         return ResponseEntity
-                .status(e.getStatus())
+                .status(responseCode)
                 .body(ErrorResponseEntity.builder()
-                        .status(e.getStatus().value())
-                        .code(e.name())
-                        .message(message)
+                        .responseCode(e.getStatus().value())
+                        .responseStatus(e.name())
+                        .responseMessage(message)
                         .build()
                 );
     }
