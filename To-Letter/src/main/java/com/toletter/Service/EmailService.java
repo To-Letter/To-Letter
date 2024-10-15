@@ -78,7 +78,7 @@ public class EmailService {
     // 데베에 저장
     public void saveDB(String email, String randomCode) {
         if(authRepository.existsByEmail(email)){
-            throw new ErrorException("이미 인증 메일을 보냈습니다.", ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException("이미 인증 메일을 보냈습니다.", 200, ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         EmailSaveRequest emailSaveRequest = new EmailSaveRequest();
         emailSaveRequest.setEmail(email);

@@ -27,7 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors();
 
         http.authorizeRequests()
-                .antMatchers("/users/su/**", "/kakao/su/**", "/users/email/**").permitAll()
+                .antMatchers("/users/su/**", "/kakao/su/**", "/users/email/**", "/users/kakao").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .logout() // 로그아웃 설정

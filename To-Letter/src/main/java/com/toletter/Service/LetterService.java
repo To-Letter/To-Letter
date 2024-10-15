@@ -36,7 +36,9 @@ public class LetterService {
     public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails){
         Letter letter = sendLetterRequest.toEntity();
         User fromUser =  userDetails.getUser(); // 보내는 유저
-        User toUser = userRepository.findByNickname((letter.getToUserNickname())).orElseThrow(() -> new ErrorException("유저 없음.", ErrorCode.FORBIDDEN_EXCEPTION)); // 받는 유저
+        User toUser = userRepository.findByNickname((letter.getToUserNickname())).orElseThrow(() ->
+                new ErrorException("유저 없음.", 200, ErrorCode.FORBIDDEN_EXCEPTION)
+        ); // 받는 유저
 
         Map fromUserGPS = gpsService.getGpsUrl(fromUser.getAddress()); // 보내는 유저 위도 경도 구함
         Map toUserGPS = gpsService.getGpsUrl(toUser.getAddress()); // 받는 유저 위도 경도 구함
@@ -206,7 +208,7 @@ public class LetterService {
         } else if (distance > 100) {
             return 5;
         } else {
-            throw new ErrorException("400"+"거리가 나오지 않습니다.", ErrorCode.NOT_FOUND_EXCEPTION);
+            throw new ErrorException("거리가 나오지 않습니다.", 404,ErrorCode.NOT_FOUND_EXCEPTION);
         }
     }
 }
