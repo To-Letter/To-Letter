@@ -9,6 +9,6 @@ public interface ReceivedBoxRepository extends JpaRepository<ReceivedBox, Long> 
 
     Optional<ReceivedBox> findByLetterId(Long letter);
 
-    List<ReceivedBox> findAllByUserNickname(String user_nickname);
+    List<ReceivedBox> findAllByUserEmail(String user_email);
 
 }

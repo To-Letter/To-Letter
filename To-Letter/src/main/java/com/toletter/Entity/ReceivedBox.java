@@ -20,9 +20,9 @@ public class ReceivedBox { // 받은 메일함
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "유저 닉네임", example = "test")
+    @ApiModelProperty(value = "유저 이메일", example = "test@naver.com")
     @Column(nullable = false)
-    private String userNickname;
+    private String userEmail;
 
     // 도착할 시간
     @ApiModelProperty(value = "도착할 시간", example = "2024-03-01T06:06:12")

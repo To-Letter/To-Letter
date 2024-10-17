@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @Data
 @RequiredArgsConstructor
 public class SaveSentBox {
-    @ApiModelProperty(value = "보내는 유저 닉네임")
-    private String fromUserNickname;
+    @ApiModelProperty(value = "보내는 유저 이메일")
+    private String fromUserEmail;
 
     @ApiModelProperty(value = "메일 보낸 시간", example = "2024-03-04T14:02:10")
     private LocalDateTime sentTime;
@@ -21,7 +21,7 @@ public class SaveSentBox {
 
     public SentBox toEntity() {
         return SentBox.builder()
-                .userNickname(fromUserNickname)
+                .userEmail(fromUserEmail)
                 .sentTime(sentTime)
                 .letter(letter)
                 .build();

@@ -19,9 +19,9 @@ public class SendLetterRequest {
     @ApiModelProperty(value = "내용")
     private String contents;
 
-    public Letter toEntity() {
+    public Letter toEntity(String toUserEmail) {
         return Letter.builder()
-                .toUserNickname(toUserNickname)
+                .toUserEmail(toUserEmail)
                 .title(title)
                 .contents(contents)
                 .build();

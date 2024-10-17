@@ -10,6 +10,6 @@ public interface SentBoxRepository extends JpaRepository<SentBox, Long> {
 
     Optional<SentBox> findByLetterId(Long letter);
 
-    List<SentBox> findAllByUserNickname(String user_nickname);
+    List<SentBox> findAllByUserEmail(String user_email);
 
 }

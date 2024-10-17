@@ -21,12 +21,12 @@ public class Letter {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "받는 유저 닉네임", example = "to_test")
-    private String toUserNickname;
+    @ApiModelProperty(value = "받는 유저 이메일", example = "to_test@naver.com")
+    private String toUserEmail;
 
-    @ApiModelProperty(value = "보내는 유저 닉네임", example = "from_test")
+    @ApiModelProperty(value = "보내는 유저 이메일", example = "from_test@naver.com")
     @Column(nullable = false)
-    private String fromUserNickname;
+    private String fromUserEmail;
 
     // 메일 보낸 시간
     @ApiModelProperty(value = "메일 보낸 시간", example = "2024-03-01T06:06:12")
