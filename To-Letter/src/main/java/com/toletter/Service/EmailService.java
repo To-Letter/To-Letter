@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
 
@@ -51,14 +52,31 @@ public class EmailService {
     }
 
     // 메일 보내기
-    public ResponseDTO sendEmail(String toEmail) throws Exception {
+    public ResponseDTO sendEmail(String toEmail) throws MessagingException {
         if(userRepository.findByEmail(toEmail).get().isSecondConfirmed()){
             return ResponseDTO.res(403, "2차 인증을 완료", "");
         }
+
         if(authRepository.existsByEmail(toEmail)){
+            // 현재 시각 가져오기
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            Auth auth = authRepository.findByEmail(toEmail).orElseThrow();
+
+            // 이메일 인증 제한 시간 5분 지정
+            if(currentDateTime.isAfter(auth.getCreatedDate().plusMinutes(5))){
+                authRepository.deleteByEmail(toEmail);
+                this.sendEmailForAuth(toEmail);
+                return ResponseDTO.res(201,"시간 초과하여 2차 인증 메일 다시 보냄", "");
+            }
             return ResponseDTO.res(401, "이미 인증 메일을 보냈습니다.", "");
         }
 
+        this.sendEmailForAuth(toEmail);
+        return ResponseDTO.res(200, "2차 인증 메일 전송 성공", "");
+    }
+
+    // 실제 메일 전송
+    public void sendEmailForAuth(String toEmail) throws MessagingException {
         String randomCode = createCode(); //인증 코드 생성
 
         MimeMessage message = emailSender.createMimeMessage();
@@ -72,7 +90,6 @@ public class EmailService {
 
         // 데베에 저장
         this.saveDB(toEmail, randomCode);
-        return ResponseDTO.res(200, "2차 인증 메일 전송 성공", "");
     }
 
     // 데베에 저장
@@ -88,7 +105,9 @@ public class EmailService {
 
     // 2차 인증 검증
     public ResponseDTO verifyEmail(EmailVerifyRequest emailVerifyRequest) {
-        Auth auth = authRepository.findByEmail(emailVerifyRequest.getEmail()).orElseThrow();
+        Auth auth = authRepository.findByEmail(emailVerifyRequest.getEmail()).orElseThrow(() ->
+            new ErrorException("해당 메일로 2차 인증을 하지 않았습니다.(메일이 없음)", 200, ErrorCode.NOT_FOUND_EXCEPTION)
+        );
 
         // 현재 시각 가져오기
         LocalDateTime currentDateTime = LocalDateTime.now();
