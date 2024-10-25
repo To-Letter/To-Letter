@@ -57,6 +57,8 @@ public class LetterService {
 
         // 메일 db 저장
         letter.setFromUserEmail(fromUser.getEmail());
+        letter.setToUserNickname(toUser.getNickname());
+        letter.setFromUserNickname(fromUser.getNickname());
         letter.setArrivedAt(arrivedTime);
         letter.setViewCheck(false);
         letterRepository.save(letter);
@@ -88,7 +90,7 @@ public class LetterService {
         List<LetterDTO> LetterList = listBox.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
-                .map(letter -> LetterDTO.toDTO(letter, findNickname(letter.getToUserEmail()), findNickname(letter.getFromUserEmail())))
+                .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
 
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), LetterList);
@@ -105,7 +107,7 @@ public class LetterService {
                 .filter(Objects::nonNull)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .filter(letter -> !letter.getViewCheck())
-                .map(letter -> LetterDTO.toDTO(letter, findNickname(letter.getToUserEmail()), findNickname(letter.getFromUserEmail())))
+                .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
 
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), unReadListBox);
@@ -122,7 +124,7 @@ public class LetterService {
                 .filter(Objects::nonNull)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .filter(Letter::getViewCheck)
-                .map(letter -> LetterDTO.toDTO(letter, findNickname(letter.getToUserEmail()), findNickname(letter.getFromUserEmail())))
+                .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
 
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), readListBox);
@@ -138,7 +140,7 @@ public class LetterService {
             return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
 
-        return ResponseDTO.res(200, "메일 읽기 성공", LetterDTO.toDTO(letter, findNickname(letter.getToUserEmail()), findNickname(letter.getFromUserEmail())));
+        return ResponseDTO.res(200, "메일 읽기 성공", LetterDTO.toDTO(letter));
     }
 
     // 메일 읽음 처리
@@ -152,7 +154,7 @@ public class LetterService {
         letter.updateViewCheck();
         letterRepository.save(letter);
 
-        LetterDTO letterDTO = LetterDTO.toDTO(letter, findNickname(letter.getToUserEmail()), findNickname(letter.getFromUserEmail()));
+        LetterDTO letterDTO = LetterDTO.toDTO(letter);
         return ResponseDTO.res(200, "메일 읽기 성공", letterDTO);
     }
 
@@ -164,7 +166,7 @@ public class LetterService {
         List<LetterDTO> sentListBox = letterList.stream()
                 .map(SentBox::getLetter)
                 .filter(Objects::nonNull)
-                .map(letter -> LetterDTO.toDTO(letter, findNickname(letter.getToUserEmail()), findNickname(letter.getFromUserEmail())))
+                .map(LetterDTO::toDTO)
                 .collect(Collectors.toList());
 
         return ResponseDTO.res(200, "보낸 모든 메일함 열기", SentLetterResponse.res(user.getNickname(), sentListBox));
@@ -178,7 +180,7 @@ public class LetterService {
         if(!user.getEmail().equals(letter.getFromUserEmail())){
             return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
-        return ResponseDTO.res(200, "보낸 메일 읽기 성공", LetterDTO.toDTO(letter, findNickname(letter.getToUserEmail()), findNickname(letter.getFromUserEmail())));
+        return ResponseDTO.res(200, "보낸 메일 읽기 성공", LetterDTO.toDTO(letter));
     }
 
     // 메일 삭제

@@ -38,11 +38,11 @@ public class LetterDTO {
     @ApiModelProperty(value = "메일 읽었는지 확인", example = "T / F")
     private Boolean viewCheck;
 
-    public static LetterDTO toDTO(Letter letter, String toUserNickname, String fromUserNickname) {
+    public static LetterDTO toDTO(Letter letter) {
         LetterDTO dto = new LetterDTO();
         dto.setId(letter.getId());
-        dto.setToUserNickname(toUserNickname);
-        dto.setFromUserNickname(fromUserNickname);
+        dto.setToUserNickname(letter.getToUserNickname());
+        dto.setFromUserNickname(letter.getFromUserNickname());
         dto.setCreatedAt(letter.getCreatedAt());
         dto.setArrivedAt(letter.getArrivedAt());
         dto.setTitle(letter.getTitle());
