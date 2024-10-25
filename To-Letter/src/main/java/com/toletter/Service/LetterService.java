@@ -34,11 +34,11 @@ public class LetterService {
 
     // 메일 보내기
     public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails){
-        Letter letter = sendLetterRequest.toEntity();
         User fromUser =  userDetails.getUser(); // 보내는 유저
-        User toUser = userRepository.findByNickname((letter.getToUserNickname())).orElseThrow(() ->
+        User toUser = userRepository.findByNickname(sendLetterRequest.getToUserNickname()).orElseThrow(() ->
                 new ErrorException("유저 없음.", 200, ErrorCode.FORBIDDEN_EXCEPTION)
         ); // 받는 유저
+        Letter letter = sendLetterRequest.toEntity(toUser.getEmail());
 
         Map fromUserGPS = gpsService.getGpsUrl(fromUser.getAddress()); // 보내는 유저 위도 경도 구함
         Map toUserGPS = gpsService.getGpsUrl(toUser.getAddress()); // 받는 유저 위도 경도 구함
@@ -56,21 +56,25 @@ public class LetterService {
         LocalDateTime arrivedTime = now.plusMinutes(arrivedDay);
 
         // 메일 db 저장
+        letter.setFromUserEmail(fromUser.getEmail());
+        letter.setToUserNickname(toUser.getNickname());
         letter.setFromUserNickname(fromUser.getNickname());
         letter.setArrivedAt(arrivedTime);
         letter.setViewCheck(false);
         letterRepository.save(letter);
 
         // 보낸 메일함에 저장
-        SaveSentBox saveBoxDTO = new SaveSentBox();
-        saveBoxDTO.setFromUserNickname(fromUser.getNickname());
-        saveBoxDTO.setSentTime(letter.getCreatedAt());
-        saveBoxDTO.setLetter(letter);
-        sentBoxRepository.save(saveBoxDTO.toEntity());
+        if(sendLetterRequest.isSaveLetterCheck()){
+            SaveSentBox saveBoxDTO = new SaveSentBox();
+            saveBoxDTO.setFromUserEmail(fromUser.getEmail());
+            saveBoxDTO.setSentTime(letter.getCreatedAt());
+            saveBoxDTO.setLetter(letter);
+            sentBoxRepository.save(saveBoxDTO.toEntity());
+        }
 
         // 받는 메일함에 저장
         SaveReceivedBox saveReceivedBox = new SaveReceivedBox();
-        saveReceivedBox.setToUserNickname(toUser.getNickname());
+        saveReceivedBox.setToUserEmail(toUser.getEmail());
         saveReceivedBox.setReceivedTime(arrivedTime);
         saveReceivedBox.setLetter(letter);
         receivedBoxRepository.save(saveReceivedBox.toEntity());
@@ -84,7 +88,7 @@ public class LetterService {
     public ResponseDTO receivedLetter (CustomUserDetails userDetails){
         User user =  userDetails.getUser();
 
-        List<ReceivedBox> listBox = receivedBoxRepository.findAllByUserNickname(user.getNickname());
+        List<ReceivedBox> listBox = receivedBoxRepository.findAllByUserEmail(user.getEmail());
         List<LetterDTO> LetterList = listBox.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
@@ -99,7 +103,7 @@ public class LetterService {
     public ResponseDTO receivedUnReadLetter(CustomUserDetails userDetails){
         User user =  userDetails.getUser();
 
-        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
+        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserEmail(user.getEmail());
         List<LetterDTO> unReadListBox = letterList.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(Objects::nonNull)
@@ -116,7 +120,7 @@ public class LetterService {
     public ResponseDTO receivedReadLetter(CustomUserDetails userDetails){
         User user =  userDetails.getUser();
 
-        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserNickname(user.getNickname());
+        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserEmail(user.getEmail());
         List<LetterDTO> readListBox = letterList.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(Objects::nonNull)
@@ -134,7 +138,7 @@ public class LetterService {
         User user = userDetails.getUser();
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
 
-        if(!user.getNickname().equals(letter.getToUserNickname())){
+        if(!user.getEmail().equals(letter.getToUserEmail())){
             return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
 
@@ -146,7 +150,7 @@ public class LetterService {
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
         User user = userDetails.getUser();
 
-        if(!user.getNickname().equals(letter.getToUserNickname())){
+        if(!user.getEmail().equals(letter.getToUserEmail())){
             return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
         letter.updateViewCheck();
@@ -160,7 +164,7 @@ public class LetterService {
     public ResponseDTO viewSentBox(CustomUserDetails customUserDetails){
         User user = customUserDetails.getUser();
 
-        List<SentBox> letterList = sentBoxRepository.findAllByUserNickname(user.getNickname());
+        List<SentBox> letterList = sentBoxRepository.findAllByUserEmail(user.getEmail());
         List<LetterDTO> sentListBox = letterList.stream()
                 .map(SentBox::getLetter)
                 .filter(Objects::nonNull)
@@ -175,7 +179,7 @@ public class LetterService {
         User user = customUserDetails.getUser();
         Letter letter = sentBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
 
-        if(!user.getNickname().equals(letter.getFromUserNickname())){
+        if(!user.getEmail().equals(letter.getFromUserEmail())){
             return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
         return ResponseDTO.res(200, "보낸 메일 읽기 성공", LetterDTO.toDTO(letter));
@@ -186,11 +190,17 @@ public class LetterService {
         User user = customUserDetails.getUser();
         ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
 
-        if(!receivedBox.getUserNickname().equals(user.getNickname())){
+        if(!receivedBox.getUserEmail().equals(user.getEmail())){
             return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
         }
         receivedBoxRepository.delete(receivedBox);
         return ResponseDTO.res(200, "메일 삭제 성공", "");
+    }
+
+    // 메일로 닉네임 찾아오기
+    public String findNickname(String email){
+        String nickname = userRepository.findByEmail(email).get().getNickname();
+        return nickname;
     }
 
     // 거리에 따른 메일 도착 시간

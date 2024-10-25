@@ -21,6 +21,13 @@ public class Letter {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @ApiModelProperty(value = "받는 유저 이메일", example = "to_test@naver.com")
+    private String toUserEmail;
+
+    @ApiModelProperty(value = "보내는 유저 이메일", example = "from_test@naver.com")
+    @Column(nullable = false)
+    private String fromUserEmail;
+
     @ApiModelProperty(value = "받는 유저 닉네임", example = "to_test")
     private String toUserNickname;
 
