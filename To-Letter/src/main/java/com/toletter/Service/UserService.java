@@ -121,7 +121,7 @@ public class UserService {
         User user =  userDetails.getUser();
         user.updateUser(userUpdateRequest);
         userRepository.save(user);
-        UserUpdateResponse userUpdateResponse = UserUpdateResponse.res(user.getEmail(), user.getNickname(), user.getAddress());
+        UserUpdateResponse userUpdateResponse = UserUpdateResponse.res(user.getEmail(), user.getNickname(), user.getAddress(), user.getLoginType());
         return ResponseDTO.res(200, "유저 정보 수정 성공", userUpdateResponse);
     }
 
