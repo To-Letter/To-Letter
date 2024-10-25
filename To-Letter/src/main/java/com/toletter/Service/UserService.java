@@ -5,6 +5,8 @@ import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
 import com.toletter.Entity.User;
 import com.toletter.Enums.UserRole;
+import com.toletter.Error.ErrorCode;
+import com.toletter.Error.ErrorException;
 import com.toletter.JWT.*;
 import com.toletter.Repository.*;
 import com.toletter.Service.Jwt.CustomUserDetails;
@@ -80,6 +82,30 @@ public class UserService {
         }
         this.setJwtTokenInHeader(userLoginRequest.getEmail(), user.getUserRole(), httpServletResponse);
         return ResponseDTO.res(200, "로그인 성공", "");
+    }
+
+    // 비밀번호 변경(로그인X)
+    public ResponseDTO findUpdatePW(UserFindUpdatePWRequest userFindUpdatePWRequest){
+        User user = userRepository.findByEmail(userFindUpdatePWRequest.getEmail()).orElseThrow(() ->
+            new ErrorException("유저가 없음(이메일이 없음)", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
+        );
+        // 비밀번호 암호화
+        user.updatePassword(passwordEncoder.encode(userFindUpdatePWRequest.getChangePassword()));
+        userRepository.save(user);
+        return ResponseDTO.res(200, "비밀번호 변경 성공", "");
+    }
+
+    //비밀번호 변경(로그인O)
+    public ResponseDTO updatePassword(CustomUserDetails userDetails, UserUpdatePWRequest userUpdatePWRequest){
+        User user = userDetails.getUser();
+
+        if(!passwordEncoder.matches(userUpdatePWRequest.getNowPassword(), user.getPassword())){
+            return ResponseDTO.res(401, "현재 비밀번호가 틀림", "");
+        }
+
+        user.updatePassword(passwordEncoder.encode(userUpdatePWRequest.getChangePassword()));
+        userRepository.save(user);
+        return ResponseDTO.res(200, "비밀번호 변경 성공", "");
     }
 
     // 유저 정보 보여주기

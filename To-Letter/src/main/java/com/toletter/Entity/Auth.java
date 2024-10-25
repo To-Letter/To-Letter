@@ -2,6 +2,7 @@ package com.toletter.Entity;
 
 import javax.persistence.*;
 
+import com.toletter.Enums.AuthType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -33,4 +34,8 @@ public class Auth {
     @ApiModelProperty(value = "랜덤코드", example = "a2d1e3")
     @Column
     private String randomCode;
+
+    @ApiModelProperty(value = "메일 구분(2차 인증 / 비밀번호 변경)", example = "secondAuth / updatePW")
+    @Column
+    private AuthType authType;
 }
