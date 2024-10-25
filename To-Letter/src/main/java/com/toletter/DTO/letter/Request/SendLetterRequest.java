@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @RequiredArgsConstructor
 public class SendLetterRequest {
@@ -18,6 +16,9 @@ public class SendLetterRequest {
 
     @ApiModelProperty(value = "내용")
     private String contents;
+
+    @ApiModelProperty(value = "보낸 메시지함에 저장할 지 말지 체크", example = "T/F")
+    private boolean saveLetterCheck;
 
     public Letter toEntity(String toUserEmail) {
         return Letter.builder()

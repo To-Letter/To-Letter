@@ -64,11 +64,13 @@ public class LetterService {
         letterRepository.save(letter);
 
         // 보낸 메일함에 저장
-        SaveSentBox saveBoxDTO = new SaveSentBox();
-        saveBoxDTO.setFromUserEmail(fromUser.getEmail());
-        saveBoxDTO.setSentTime(letter.getCreatedAt());
-        saveBoxDTO.setLetter(letter);
-        sentBoxRepository.save(saveBoxDTO.toEntity());
+        if(sendLetterRequest.isSaveLetterCheck()){
+            SaveSentBox saveBoxDTO = new SaveSentBox();
+            saveBoxDTO.setFromUserEmail(fromUser.getEmail());
+            saveBoxDTO.setSentTime(letter.getCreatedAt());
+            saveBoxDTO.setLetter(letter);
+            sentBoxRepository.save(saveBoxDTO.toEntity());
+        }
 
         // 받는 메일함에 저장
         SaveReceivedBox saveReceivedBox = new SaveReceivedBox();
