@@ -86,7 +86,7 @@ public class UserService {
     public ResponseDTO viewUser(CustomUserDetails userDetails){
         User user =  userDetails.getUser();
 
-        return  ResponseDTO.res(200, "유저 정보 보여주기 성공", UserViewResponse.res(user.getAddress(), user.getNickname(), user.getEmail()));
+        return  ResponseDTO.res(200, "유저 정보 보여주기 성공", UserViewResponse.res(user.getAddress(), user.getNickname(), user.getEmail(), user.getLoginType()));
     }
 
     // 유저 정보 수정
