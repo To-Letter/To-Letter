@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.*;
 
 @RestController
@@ -66,6 +67,46 @@ public class UserController {
         return userService.login(userLoginRequest, response);
     }
 
+    // 비밀번호 변경을 위한 이메일 전송
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "이메일 전송 성공"),
+            @ApiResponse(code = 201, message = "시간 초과하여 2차 인증 메일 다시 보냄"),
+            @ApiResponse(code = 401, message = "등록된 이메일이 없음(회원가입되지 않은(유저가 없거나 2차 인증이 완료되지 않은) 이메일임)"),
+            @ApiResponse(code = 403, message = "이미 메일을 보냄")
+    })
+    @ApiOperation(value = "비밀번호 변경을 위한 이메일 전송", notes = "토큰 필요 없음")
+    @GetMapping("/find/sendEmail")
+    public ResponseDTO emailPassword(@RequestParam String email) throws MessagingException {
+        return emailService.emailPassword(email);
+    }
+
+    // 비밀번호 변경(로그인X)
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "비밀번호 변경 성공"),
+            @ApiResponse(code = 401, message = "유저가 없음(이메일이 없음)"),
+    })
+    @ApiOperation(value = "비밀번호 변경", notes = "토큰 필요 없음")
+    @PatchMapping("/find/updatePW")
+    public ResponseDTO findUpdatePW(@RequestBody UserFindUpdatePWRequest userFindUpdatePWRequest) {
+        return userService.findUpdatePW(userFindUpdatePWRequest);
+    }
+
+    // 비밀번호 변경(로그인O)
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "비밀번호 변경 성공"),
+            @ApiResponse(code = 401, message = "현재 비밀번호 틀림"),
+            @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
+            @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
+            @ApiResponse(code = 1003, message = "만료된 토큰"),
+            @ApiResponse(code = 1004, message = "변조된 토큰"),
+            @ApiResponse(code = 1005, message = "잘못된 접근")
+    })
+    @ApiOperation(value = "비밀번호 변경")
+    @PatchMapping("/updatePW")
+    public ResponseDTO updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody UserUpdatePWRequest userUpdatePWRequest) {
+        return userService.updatePassword(userDetails, userUpdatePWRequest);
+    }
+
     // 마이페이지
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "유저 정보 전달 성공"),
@@ -97,7 +138,7 @@ public class UserController {
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
     })
     @ApiOperation(value = "유저 정보 수정")
-    @PutMapping("/update")
+    @PatchMapping("/update")
     public ResponseDTO updateUser(@RequestBody UserUpdateRequest userUpdateRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return userService.updateUser(userUpdateRequest, userDetails);
     }
@@ -135,8 +176,9 @@ public class UserController {
 
     // 이메일 인증 검증
     @ApiResponses( value ={
-            @ApiResponse(code = 200, message = "이메일 인증 성공"),
-            @ApiResponse(code = 401, message = "이메일 인증 실패 / 시간 초과 / 다시 보냄"),
+            @ApiResponse(code = 200, message = "2차 인증 검증 성공"),
+            @ApiResponse(code = 201, message = "비밀번호 인증 검증 성공"),
+            @ApiResponse(code = 401, message = "이메일 인증 실패 / 시간 초과"),
             @ApiResponse(code = 403, message = "이메일 인증 실패 / 랜덤 코드 불일치"),
             @ApiResponse(code = 404, message = "이메일 인증 실패 / 메일 없음")
     })

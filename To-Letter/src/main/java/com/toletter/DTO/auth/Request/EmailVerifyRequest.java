@@ -1,5 +1,6 @@
 package com.toletter.DTO.auth.Request;
 
+import com.toletter.Enums.AuthType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -12,4 +13,7 @@ public class EmailVerifyRequest {
 
     @ApiModelProperty(value = "랜덤코드")
     private String randomCode;
+
+    @ApiModelProperty(value = "메일 인증 타입")
+    private AuthType authType;
 }
