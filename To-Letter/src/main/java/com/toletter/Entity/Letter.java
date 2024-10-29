@@ -46,9 +46,6 @@ public class Letter {
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime arrivedAt;
 
-    @ApiModelProperty(value = "제목", example = "IT학부즈 보아라.")
-    private String title;
-
     @ApiModelProperty(value = "내용", example = "안녕? 나는 조교야! 우리 친하게 지내자!")
     private String contents;
 
