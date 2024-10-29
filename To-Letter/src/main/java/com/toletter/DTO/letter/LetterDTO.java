@@ -29,9 +29,6 @@ public class LetterDTO {
     @ApiModelProperty(value = "메일 도착할 시간", example = "2024-03-04T06:06:12")
     private LocalDateTime arrivedAt;
 
-    @ApiModelProperty(value = "제목", example = "IT학부즈 보아라.")
-    private String title;
-
     @ApiModelProperty(value = "내용", example = "안녕? 나는 조교야! 우리 친하게 지내자!")
     private String contents;
 
@@ -45,7 +42,6 @@ public class LetterDTO {
         dto.setFromUserNickname(letter.getFromUserNickname());
         dto.setCreatedAt(letter.getCreatedAt());
         dto.setArrivedAt(letter.getArrivedAt());
-        dto.setTitle(letter.getTitle());
         dto.setContents(letter.getContents());
         dto.setViewCheck(letter.getViewCheck());
         return dto;
