@@ -27,10 +27,19 @@ public class KaKaoController {
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "인증코드 발급 성공"),
     })
-    @ApiOperation(value = "카카오 인증 코드 발급", notes = "카카오 인증 코드 발급을 위한 URL 발급")
+    @ApiOperation(value = "카카오 인증 코드 발급 / 회원가입을 위한", notes = "카카오 인증 코드 발급을 위한 URL 발급")
     @GetMapping("/su/auth")
     public ResponseDTO authKakao(){
         return kakaoService.getAuthCode();
+    }
+
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "인증코드 발급 성공"),
+    })
+    @ApiOperation(value = "카카오 인증 코드 발급 / 탈퇴를 위한", notes = "카카오 인증 코드 발급을 위한 URL 발급")
+    @GetMapping("/su/auth/delete")
+    public ResponseDTO authDeleteKakao(){
+        return kakaoService.getDeleteAuthCode();
     }
 
     // 카카오 회원가입

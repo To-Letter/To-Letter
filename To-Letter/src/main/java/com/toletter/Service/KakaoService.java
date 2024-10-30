@@ -39,6 +39,9 @@ public class KakaoService {
     @Value("${kakao.redirectUrl}")
     String redirectUrl;
 
+    @Value("${kakao.redirectDeleteUrl}")
+    String redirectDeleteUrl;
+
     String authUrl = "https://kauth.kakao.com/oauth/authorize?";
     String tokenUrl = "https://kauth.kakao.com/oauth/token";
     String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
@@ -49,9 +52,17 @@ public class KakaoService {
     private final AlarmService alarmService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    // 회원가입을 위한 url
     public ResponseDTO getAuthCode(){
         StringBuffer url = new StringBuffer();
         url.append(authUrl) .append("client_id="+kakaoApiKey).append("&redirect_uri="+redirectUrl).append("&response_type=code");
+        return ResponseDTO.res(200, "url 전달 성공",url.toString());
+    }
+
+    // 탈퇴를 위한 url
+    public ResponseDTO getDeleteAuthCode(){
+        StringBuffer url = new StringBuffer();
+        url.append(authUrl) .append("client_id="+kakaoApiKey).append("&redirect_uri="+redirectDeleteUrl).append("&response_type=code");
         return ResponseDTO.res(200, "url 전달 성공",url.toString());
     }
 
