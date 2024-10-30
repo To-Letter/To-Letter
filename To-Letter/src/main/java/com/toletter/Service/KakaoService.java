@@ -67,7 +67,7 @@ public class KakaoService {
     }
 
     // 토큰 발급하기
-    public Map getTokenUrl(String code) throws ParseException {
+    public Map getTokenUrl(String code, String type) throws ParseException {
         String access_Token = "";
         String refresh_Token = "";
         String refresh_token_expires_in = "";
@@ -81,7 +81,11 @@ public class KakaoService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code"); //고정값
         params.add("client_id", kakaoApiKey);
-        params.add("redirect_uri", redirectUrl);
+        if(type.equals("login")){
+            params.add("redirect_uri", redirectUrl);
+        } else if(type.equals("delete")){
+            params.add("redirect_uri", redirectDeleteUrl);
+        }
         params.add("code", code);
 
         // header + body

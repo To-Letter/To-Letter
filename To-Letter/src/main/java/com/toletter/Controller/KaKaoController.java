@@ -66,7 +66,7 @@ public class KaKaoController {
     @ApiOperation(value = "카카오 로그인")
     @PostMapping("/su/token")
     public ResponseDTO tokenKaKao(@RequestParam String code, HttpServletResponse httpServletResponse) throws ParseException {
-        Map token = kakaoService.getTokenUrl(code);
+        Map token = kakaoService.getTokenUrl(code, "login");
         return kakaoService.getUserInfo(token, httpServletResponse);
     }
 
@@ -78,7 +78,7 @@ public class KaKaoController {
     @ApiOperation(value = "카카오 유저 탈퇴")
     @DeleteMapping("/delete")
     public ResponseDTO tokenKaKao(HttpServletRequest httpServletRequest, @RequestParam String code, @AuthenticationPrincipal CustomUserDetails userDetails) throws ParseException {
-        Map token = kakaoService.getTokenUrl(code);
+        Map token = kakaoService.getTokenUrl(code, "delete");
         return kakaoService.userKaKaoDelete(httpServletRequest, token, userDetails);
     }
 }
