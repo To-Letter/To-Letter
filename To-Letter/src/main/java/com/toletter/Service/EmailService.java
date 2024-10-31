@@ -58,7 +58,7 @@ public class EmailService {
     // 2차 인증을 위한 이메일 보내기
     public ResponseDTO sendEmail(String toEmail) throws MessagingException {
         if(userRepository.findByEmail(toEmail).get().isSecondConfirmed()){
-            return ResponseDTO.res(403, "2차 인증을 완료", "");
+            return ResponseDTO.res(403, "2차 인증 이메일 전송 실패 / 2차 인증 완료한 유저", "");
         }
 
         if(authRepository.existsByEmailAndAuthType(toEmail, AuthType.secondAuth)){
@@ -70,9 +70,9 @@ public class EmailService {
             if(currentDateTime.isAfter(auth.getCreatedDate().plusMinutes(5))){
                 authRepository.deleteByEmail(toEmail);
                 this.sendEmailForAuth(toEmail, AuthType.secondAuth);
-                return ResponseDTO.res(201,"시간 초과하여 2차 인증 메일 다시 보냄", "");
+                return ResponseDTO.res(201,"2차 인증 이메일 전송 실패 / 시간 초과하여 2차 인증 메일 다시 보냄", "");
             }
-            return ResponseDTO.res(401, "이미 인증 메일을 보냈습니다.", "");
+            return ResponseDTO.res(401, "2차 인증 이메일 전송 실패 / 이미 메일을 보냄", "");
         }
 
         this.sendEmailForAuth(toEmail, AuthType.secondAuth);
@@ -82,7 +82,7 @@ public class EmailService {
     // 비밀번호 변경을 위한 메일 보내기
     public ResponseDTO emailPassword(String toEmail) throws MessagingException {
         if(!userRepository.existsByEmail(toEmail) || !userRepository.findByEmail(toEmail).get().isSecondConfirmed()){
-            return ResponseDTO.res(401, "유저가 없음.(회원가입이 되지 않은 이메일임)", "");
+            return ResponseDTO.res(401, "비밀번호 변경 이메일 전송 실패 / 유저 없음(혹은 2차인증이 되지 않은 유저임)", "");
         }
 
         if(authRepository.existsByEmailAndAuthType(toEmail, AuthType.updatePW)){
@@ -94,9 +94,9 @@ public class EmailService {
             if(currentDateTime.isAfter(auth.getCreatedDate().plusMinutes(5))){
                 authRepository.deleteByEmail(toEmail);
                 this.sendEmailForAuth(toEmail, AuthType.updatePW);
-                return ResponseDTO.res(201,"시간 초과하여 비밀번호 변경 메일 다시 보냄", "");
+                return ResponseDTO.res(201,"비밀번호 변경 이메일 전송 실패 / 시간 초과, 인증 이메일 다시 보냄", "");
             }
-            return ResponseDTO.res(403, "이미 인증 메일을 보냈습니다.", "");
+            return ResponseDTO.res(403, "비밀번호 변경 이메일 전송 실패 / 이미 인증 이메일을 보냄", "");
         }
         this.sendEmailForAuth(toEmail, AuthType.updatePW);
 

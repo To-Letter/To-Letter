@@ -46,7 +46,7 @@ public class UserController {
     // 회원가입
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "회원가입 성공"),
-            @ApiResponse(code = 401, message = "같은 이메일/닉네임 존재")
+            @ApiResponse(code = 401, message = "회원가입 실패 / 같은 이메일, 닉네임 존재")
     })
     @ApiOperation(value = "유저 회원가입", notes = "토큰 필요 없음")
     @PostMapping("/su/signup")
@@ -69,10 +69,10 @@ public class UserController {
 
     // 비밀번호 변경을 위한 이메일 전송
     @ApiResponses( value ={
-            @ApiResponse(code = 200, message = "이메일 전송 성공"),
-            @ApiResponse(code = 201, message = "시간 초과하여 2차 인증 메일 다시 보냄"),
-            @ApiResponse(code = 401, message = "등록된 이메일이 없음(회원가입되지 않은(유저가 없거나 2차 인증이 완료되지 않은) 이메일임)"),
-            @ApiResponse(code = 403, message = "이미 인증 이메일을 보냄")
+            @ApiResponse(code = 200, message = "비밀번호 변경 이메일 전송 성공"),
+            @ApiResponse(code = 201, message = "비밀번호 변경 이메일 전송 실패 / 시간 초과, 인증 이메일 다시 보냄"),
+            @ApiResponse(code = 401, message = "비밀번호 변경 이메일 전송 실패 / 유저 없음(혹은 2차인증이 되지 않은 유저임)"),
+            @ApiResponse(code = 403, message = "비밀번호 변경 이메일 전송 실패 / 이미 인증 이메일을 보냄")
     })
     @ApiOperation(value = "비밀번호 변경을 위한 이메일 전송", notes = "토큰 필요 없음")
     @GetMapping("/find/sendEmail")
@@ -83,7 +83,7 @@ public class UserController {
     // 비밀번호 변경(로그인X)
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "비밀번호 변경 성공"),
-            @ApiResponse(code = 401, message = "유저가 없음(이메일이 없음)"),
+            @ApiResponse(code = 401, message = "비밀번호 변경 실패 / 유저가 없음(이메일이 없음)"),
     })
     @ApiOperation(value = "비밀번호 변경", notes = "토큰 필요 없음")
     @PatchMapping("/find/updatePW")
@@ -94,7 +94,7 @@ public class UserController {
     // 비밀번호 변경(로그인O)
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "비밀번호 변경 성공"),
-            @ApiResponse(code = 401, message = "현재 비밀번호 틀림"),
+            @ApiResponse(code = 401, message = "비밀번호 변경 실패 / 현재 비밀번호 틀림"),
             @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
             @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
             @ApiResponse(code = 1003, message = "만료된 토큰"),
@@ -163,10 +163,10 @@ public class UserController {
 
     // 2차 인증
     @ApiResponses( value ={
-            @ApiResponse(code = 200, message = "2차 인증 메일 전송 성공"),
-            @ApiResponse(code = 201, message = "시간 초과하여 2차 인증 메일 다시 보냄"),
-            @ApiResponse(code = 401, message = "2차 인증 메일 전송 실패 / 이미 메일을 보냄"),
-            @ApiResponse(code = 403, message = "2차 인증 메일 전송 실패 / 2차 인증 완료한 유저")
+            @ApiResponse(code = 200, message = "2차 인증 이메일 전송 성공"),
+            @ApiResponse(code = 201, message = "2차 인증 이메일 전송 실패 / 시간 초과하여 2차 인증 메일 다시 보냄"),
+            @ApiResponse(code = 401, message = "2차 인증 이메일 전송 실패 / 이미 메일을 보냄"),
+            @ApiResponse(code = 403, message = "2차 인증 이메일 전송 실패 / 2차 인증 완료한 유저")
     })
     @ApiOperation(value = "2차 인증", notes = "토큰 필요 없음")
     @GetMapping ("/email/auth")

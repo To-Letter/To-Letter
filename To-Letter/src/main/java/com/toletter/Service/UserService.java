@@ -49,11 +49,11 @@ public class UserService {
         User user = userSignupRequest.toEntity();
 
         if(userRepository.existsByEmail(userSignupRequest.getEmail())){
-            return ResponseDTO.res(401, "같은 이메일이 존재", "");
+            return ResponseDTO.res(401, "회원가입 실패 / 같은 이메일 존재", "");
         }
 
         if(userRepository.existsByNickname(userSignupRequest.getNickname())){
-            return ResponseDTO.res(401, "같은 닉네임이 존재", "");
+            return ResponseDTO.res(401, "회원가입 실패 / 같은 닉네임 존재", "");
         }
 
         // 비밀번호 암호화
@@ -87,7 +87,7 @@ public class UserService {
     // 비밀번호 변경(로그인X)
     public ResponseDTO findUpdatePW(UserFindUpdatePWRequest userFindUpdatePWRequest){
         User user = userRepository.findByEmail(userFindUpdatePWRequest.getEmail()).orElseThrow(() ->
-            new ErrorException("유저가 없음(이메일이 없음)", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
+            new ErrorException("비밀번호 변경 실패 / 유저가 없음(이메일이 없음)", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
         );
         // 비밀번호 암호화
         user.updatePassword(passwordEncoder.encode(userFindUpdatePWRequest.getChangePassword()));
@@ -100,7 +100,7 @@ public class UserService {
         User user = userDetails.getUser();
 
         if(!passwordEncoder.matches(userUpdatePWRequest.getNowPassword(), user.getPassword())){
-            return ResponseDTO.res(401, "현재 비밀번호가 틀림", "");
+            return ResponseDTO.res(401, "비밀번호 변경 실패 / 현재 비밀번호 틀림", "");
         }
 
         user.updatePassword(passwordEncoder.encode(userUpdatePWRequest.getChangePassword()));

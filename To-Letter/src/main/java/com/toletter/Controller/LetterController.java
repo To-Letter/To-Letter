@@ -18,7 +18,7 @@ public class LetterController {
     // 메일 보내기
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 보내기 성공"),
-            @ApiResponse(code = 401, message = "보낼 유저가 없음(유저가 존재하지 않음)"),
+            @ApiResponse(code = 401, message = "메일 보내기 실패 / 보낼 유저가 없음(유저가 존재하지 않음)"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
@@ -71,7 +71,7 @@ public class LetterController {
     // 받은 메일 열어서 확인
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "받은 메일함 열기 성공"),
-            @ApiResponse(code = 401, message = "받은 메일함 열기 실패, 본인의 메일이 아님"),
+            @ApiResponse(code = 401, message = "받은 메일함 열기 실패 / 본인의 메일이 아님"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
@@ -85,7 +85,7 @@ public class LetterController {
     // 메일 읽음 처리
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 읽음 처리 성공"),
-            @ApiResponse(code = 401, message = "메일 읽음 처리 실패, 본인의 메일이 아님"),
+            @ApiResponse(code = 401, message = "메일 읽음 처리 실패 / 본인의 메일이 아님"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
@@ -112,7 +112,7 @@ public class LetterController {
     // 보낸 메일 열어서 확인
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "보낸 메일함 열기 성공"),
-            @ApiResponse(code = 401, message = "보낸 메일함 열기 실패, 본인의 메일이 아님"),
+            @ApiResponse(code = 401, message = "보낸 메일함 열기 실패 / 본인의 메일이 아님"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
@@ -126,7 +126,7 @@ public class LetterController {
     // 메일 삭제
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 삭제 성공"),
-            @ApiResponse(code = 401, message = "메일 삭제 실패, 본인의 메일이 아님"),
+            @ApiResponse(code = 401, message = "메일 삭제 실패 / 본인의 메일이 아님"),
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")

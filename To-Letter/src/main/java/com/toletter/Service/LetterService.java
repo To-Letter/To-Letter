@@ -36,7 +36,7 @@ public class LetterService {
     public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails){
         User fromUser =  userDetails.getUser(); // 보내는 유저
         User toUser = userRepository.findByNickname(sendLetterRequest.getToUserNickname()).orElseThrow(() ->
-                new ErrorException("유저 없음.", 200, ErrorCode.FORBIDDEN_EXCEPTION)
+                new ErrorException("메일 보내기 실패 / 보낼 유저가 없음(유저가 존재하지 않음)", 200, ErrorCode.FORBIDDEN_EXCEPTION)
         ); // 받는 유저
         Letter letter = sendLetterRequest.toEntity(toUser.getEmail());
 
@@ -139,7 +139,7 @@ public class LetterService {
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
 
         if(!user.getEmail().equals(letter.getToUserEmail())){
-            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
+            return ResponseDTO.res(401, "받은 메일함 열기 실패 / 본인의 메일이 아님", "");
         }
 
         return ResponseDTO.res(200, "메일 읽기 성공", LetterDTO.toDTO(letter));
@@ -151,7 +151,7 @@ public class LetterService {
         User user = userDetails.getUser();
 
         if(!user.getEmail().equals(letter.getToUserEmail())){
-            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
+            return ResponseDTO.res(401, "메일 읽음 처리 실패 / 본인의 메일이 아님", "");
         }
         letter.updateViewCheck();
         letterRepository.save(letter);
@@ -180,7 +180,7 @@ public class LetterService {
         Letter letter = sentBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
 
         if(!user.getEmail().equals(letter.getFromUserEmail())){
-            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
+            return ResponseDTO.res(401, "보낸 메일함 열기 실패 / 본인의 메일이 아님", "");
         }
         return ResponseDTO.res(200, "보낸 메일 읽기 성공", LetterDTO.toDTO(letter));
     }
@@ -191,7 +191,7 @@ public class LetterService {
         ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
 
         if(!receivedBox.getUserEmail().equals(user.getEmail())){
-            return ResponseDTO.res(401, "메일의 소유주가 다릅니다.", "");
+            return ResponseDTO.res(401, "메일 삭제 실패 / 본인의 메일이 아님", "");
         }
         receivedBoxRepository.delete(receivedBox);
         return ResponseDTO.res(200, "메일 삭제 성공", "");
