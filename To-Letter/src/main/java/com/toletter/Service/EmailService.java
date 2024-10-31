@@ -158,12 +158,13 @@ public class EmailService {
         }
         // 인증 성공 시
         authRepository.deleteByEmail(auth.getEmail());
-
+        User user = userRepository.findByEmail(emailVerifyRequest.getEmail()).orElseThrow(() -> new ErrorException("회원가입된 이메일이 없음.", 200, ErrorCode.NOT_FOUND_EXCEPTION));
         if(emailVerifyRequest.getAuthType().equals(AuthType.secondAuth)){
-            User user = userRepository.findByEmail(emailVerifyRequest.getEmail()).orElseThrow(() -> new ErrorException("회원가입된 이메일이 없음.", 200, ErrorCode.NOT_FOUND_EXCEPTION));
             user.setSecondConfirmed(true);
             userRepository.save(user);
         } else if (emailVerifyRequest.getAuthType().equals(AuthType.updatePW)){
+            user.setChangePassWord(true);
+            userRepository.save(user);
             return ResponseDTO.res(201, "비밀번호 변경 검증 성공", "");
         }
 
