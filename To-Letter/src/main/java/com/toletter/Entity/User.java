@@ -47,6 +47,11 @@ public class User {
     @Column(nullable = false)
     private boolean secondConfirmed;
 
+    // 비밀번호 변경 확인
+    @ApiModelProperty(value = "비밀번호 변경 확인", example = "T / F")
+    @Column(nullable = false)
+    private boolean changePassWord;
+
     // 유저 권한
     @ApiModelProperty(value = "유저 권한", example = "admin / user")
     @Column(nullable = false)
