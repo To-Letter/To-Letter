@@ -8,13 +8,13 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class UserUpdateResponse {
-    @Schema(description = "유저 정보(이메일)")
+    @Schema(description = "유저 정보(이메일)", example = "test@naver.com")
     private String email;
 
-    @Schema(description = "유저 정보(닉네임)")
+    @Schema(description = "유저 정보(닉네임)", example = "test")
     private String nickname;
 
-    @Schema(description = "유저 정보(주소)")
+    @Schema(description = "유저 정보(주소)", example = "경기도 군포시 한세로 30")
     private String address;
 
     @Schema(description = "로그인 타입", example = "localLogin/kakaoLogin")

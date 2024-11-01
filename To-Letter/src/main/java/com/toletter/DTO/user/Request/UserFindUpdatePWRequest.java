@@ -1,15 +1,15 @@
 package com.toletter.DTO.user.Request;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data // get, set 둘 다 됨.
 @RequiredArgsConstructor
 public class UserFindUpdatePWRequest {
-    @ApiModelProperty(value = "이메일")
+    @Schema(description = "이메일", example = "test@naver.com")
     private String email;
 
-    @ApiModelProperty(value = "바뀔 비밀번호")
+    @Schema(description = "바뀔 비밀번호", example = "test1234")
     private String changePassword;
 }

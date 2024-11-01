@@ -1,19 +1,19 @@
 package com.toletter.DTO.auth.Request;
 
 import com.toletter.Enums.AuthType;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor
 public class EmailVerifyRequest {
-    @ApiModelProperty(value = "이메일")
+    @Schema(description = "이메일", example = "test@naver.com")
     private String email;
 
-    @ApiModelProperty(value = "랜덤코드")
+    @Schema(description = "랜덤코드", example = "qwe123")
     private String randomCode;
 
-    @ApiModelProperty(value = "메일 인증 타입")
+    @Schema(description = "메일 인증 타입", example = "secondAuth / updatePW")
     private AuthType authType;
 }

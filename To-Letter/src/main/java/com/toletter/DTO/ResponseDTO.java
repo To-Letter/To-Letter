@@ -15,7 +15,7 @@ public class ResponseDTO {
     @Schema(description = "메시지", example = "정상처리되었습니다.")
     private String responseMessage;
 
-    @Schema(description = "데이터", example = "response data")
+    @Schema(description = "데이터")
     private Object responseData;
 
     public static ResponseDTO res(int responseCode, String responseMessage, Object responseData) {

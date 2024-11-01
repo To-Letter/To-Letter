@@ -1,20 +1,20 @@
 package com.toletter.DTO.letter.Request;
 
 import com.toletter.Entity.Letter;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor
 public class SendLetterRequest {
-    @ApiModelProperty(value = "받는 유저 닉네임")
+    @Schema(description = "받는 유저 닉네임", example = "test")
     private String toUserNickname;
 
-    @ApiModelProperty(value = "내용")
+    @Schema(description = "내용", example = "안녕? 우리 친하게 지내자!")
     private String contents;
 
-    @ApiModelProperty(value = "보낸 메시지함에 저장할 지 말지 체크", example = "T/F")
+    @Schema(description = "보낸 메시지함에 저장할 지 말지 체크", example = "T/F")
     private boolean saveLetterCheck;
 
     public Letter toEntity(String toUserEmail) {

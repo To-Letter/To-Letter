@@ -1,13 +1,12 @@
 package com.toletter.Entity;
 
 import com.toletter.DTO.user.Request.UserKaKaoUpdateRequest;
-import com.toletter.DTO.user.Request.UserUpdatePWRequest;
 import com.toletter.DTO.user.Request.UserUpdateRequest;
 import com.toletter.Enums.LoginType;
 import javax.persistence.*;
 
 import com.toletter.Enums.UserRole;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @Entity
@@ -18,37 +17,37 @@ import lombok.*;
 @Table(name = "user")
 public class User {
 
-    @ApiModelProperty(value = "이메일(메일보낼 때 사용)", example = "test@gmail.com")
+    @Schema(description = "이메일(메일보낼 때 사용)", example = "test@gmail.com")
     @Id
     @Column(unique = true, nullable = false)
     private String email;
 
-    @ApiModelProperty(value = "비밀번호(암호화)", example = "testPW")
+    @Schema(description = "비밀번호(암호화)", example = "testPW")
     private String password;
 
-    @ApiModelProperty(value = "카카오 회원 번호", example = "123456789")
+    @Schema(description = "카카오 회원 번호", example = "123456789")
     private Long kakaoId;
 
-    @ApiModelProperty(value = "닉네임", example = "testNickname")
+    @Schema(description = "닉네임", example = "testNickname")
     @Column(unique = true)
     private String nickname;
 
-    @ApiModelProperty(value = "주소(편지를 받을 집주소)", example = "경기도 군포시")
+    @Schema(description = "주소(편지를 받을 집주소)", example = "경기도 군포시")
     private String address;
 
     // 로그인타입
-    @ApiModelProperty(value = "로그인 타입", example = "local/kakao")
+    @Schema(description = "로그인 타입", example = "local/kakao")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LoginType loginType;
 
     // 2차 인증 확인
-    @ApiModelProperty(value = "2차 인증 확인", example = "T / F")
+    @Schema(description = "2차 인증 확인", example = "T / F")
     @Column(nullable = false)
     private boolean secondConfirmed;
 
     // 유저 권한
-    @ApiModelProperty(value = "유저 권한", example = "admin / user")
+    @Schema(description = "유저 권한", example = "admin / user")
     @Column(nullable = false)
     private UserRole userRole;
 
