@@ -117,7 +117,7 @@ public class UserController {
             @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
     @ApiOperation(value = "유저 정보 보여주기")
     @GetMapping("/mypage")
@@ -135,7 +135,7 @@ public class UserController {
             @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
     @ApiOperation(value = "유저 정보 수정")
     @PatchMapping("/update")
@@ -153,7 +153,7 @@ public class UserController {
             @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
     @ApiOperation(value = "로그아웃")
     @GetMapping("/logout")
@@ -200,7 +200,7 @@ public class UserController {
             @ApiResponse(code = 1005, message = "잘못된 접근")
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
     @ApiOperation(value = "유저 탈퇴")
     @DeleteMapping("/delete")
