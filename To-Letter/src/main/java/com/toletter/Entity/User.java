@@ -47,7 +47,7 @@ public class User {
     private boolean secondConfirmed;
 
     // 비밀번호 변경 확인
-    @ApiModelProperty(value = "비밀번호 변경 확인", example = "T / F")
+    @Schema(description = "비밀번호 변경 확인", example = "T / F")
     @Column(nullable = false)
     private boolean changePassWord;
 
