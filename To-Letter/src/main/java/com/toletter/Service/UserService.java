@@ -59,6 +59,7 @@ public class UserService {
         // 비밀번호 암호화
         user.setPassword(passwordEncoder.encode(userSignupRequest.getPassword()));
         user.setSecondConfirmed(false);
+        user.setChangePassWord(false);
         user.setUserRole(UserRole.User);
         userRepository.save(user);
         return ResponseDTO.res(200, "회원가입 성공", "");
@@ -89,8 +90,18 @@ public class UserService {
         User user = userRepository.findByEmail(userFindUpdatePWRequest.getEmail()).orElseThrow(() ->
             new ErrorException("비밀번호 변경 실패 / 유저가 없음(이메일이 없음)", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
         );
+        if(!user.isSecondConfirmed()){
+            return ResponseDTO.res(403, "비밀번호 변경 실패 / 2차 인증이 되지 않음", "");
+        }
+        if(!user.isChangePassWord()){
+            return ResponseDTO.res(404, "비밀번호 변경 실패 / 이메일로 검증 안됨", "");
+        }
+        if(passwordEncoder.matches(userFindUpdatePWRequest.getChangePassword(), user.getPassword())){
+            return ResponseDTO.res(400, "비밀번호 변경 실패 / 원래 비밀번호와 같음", "");
+        }
         // 비밀번호 암호화
         user.updatePassword(passwordEncoder.encode(userFindUpdatePWRequest.getChangePassword()));
+        user.setChangePassWord(false);
         userRepository.save(user);
         return ResponseDTO.res(200, "비밀번호 변경 성공", "");
     }

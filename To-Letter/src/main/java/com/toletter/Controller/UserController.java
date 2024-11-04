@@ -83,7 +83,10 @@ public class UserController {
     // 비밀번호 변경(로그인X)
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "비밀번호 변경 성공"),
-            @ApiResponse(code = 401, message = "비밀번호 변경 실패 / 유저가 없음(이메일이 없음)"),
+            @ApiResponse(code = 400, message = "비밀번호 변경 실패 / 원래 비밀번호와 같음"),
+            @ApiResponse(code = 401, message = "유저가 없음(이메일이 없음)"),
+            @ApiResponse(code = 403, message = "비밀번호 변경 실패 / 2차 인증이 되지 않음"),
+            @ApiResponse(code = 404, message = "비밀번호 변경 실패 / 이메일로 검증 안됨")
     })
     @ApiOperation(value = "비밀번호 변경", notes = "토큰 필요 없음")
     @PatchMapping("/find/updatePW")
