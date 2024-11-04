@@ -150,24 +150,24 @@ public class KakaoService {
                 User user = userRepository.findByEmail(kakaoUser.getEmail()).orElseThrow();
 
                 if(!user.isSecondConfirmed()){
-                    return ResponseDTO.res(400, "로그인 실패/2차 회원가입이 제대로 해결되지 않음.", "");
+                    return ResponseDTO.res(400, "카카오 로그인 실패/ 2차 회원가입(닉네임, 주소)이 제대로 진행이 되지 않음.", "");
                 }
                 if (user.getLoginType().equals(LoginType.localLogin)) {
-                    return ResponseDTO.res(403, "회원가입 실패/동일한 이메일이 존재함.", "");
+                    return ResponseDTO.res(403, "카카오 회원가입 실패 / 동일한 이메일 존재", "");
                 } else if(user.getLoginType().equals(LoginType.kakaoLogin)){// 만약, 이미 회원가입이 된 카카오톡 유저라면
                     userService.setJwtTokenInHeader(user.getEmail(), user.getUserRole(), httpServletResponse);
-                    return ResponseDTO.res(201, "로그인 성공", kakaoUser);
+                    return ResponseDTO.res(201, "카카오 로그인 성공", kakaoUser);
                 }
             }
         } else {
-            throw new ErrorException( response.getStatusCode()+"인증에 실패하였습니다. 다시 확인해주세요.", 401 ,ErrorCode.UNAUTHORIZED_EXCEPTION);
+            throw new ErrorException( response.getStatusCode()+"카카오 인증 실패 / 토큰이 이상하거나 만료됨.", 401 ,ErrorCode.UNAUTHORIZED_EXCEPTION);
         }
         UserKaKaoSignupRequest userKaKaoSignupRequest = new UserKaKaoSignupRequest(kakaoUser.getEmail(), kakaoUser.getUserId(), LoginType.kakaoLogin, false, UserRole.User);
 
         User newUser = userKaKaoSignupRequest.toEntity();
         userRepository.save(newUser);
 
-        return ResponseDTO.res(200, "회원가입 성공", kakaoUser);
+        return ResponseDTO.res(200, "카카오 회원가입 성공", kakaoUser);
     }
 
     public ResponseDTO kakaoSignup(UserKaKaoUpdateRequest userKaKaoUpdateRequest){

@@ -3,7 +3,7 @@ package com.toletter.Entity;
 import javax.persistence.*;
 
 import com.toletter.Enums.AuthType;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,25 +17,25 @@ import java.time.LocalDateTime;
 @Builder
 @Table(name = "auth")
 public class Auth {
-    @ApiModelProperty(value = "ID(자동)", example = "1")
+    @Schema(description = "ID(자동)", example = "1")
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "이메일(2차인증 시 사용)", example = "test@gmail.com")
+    @Schema(description = "이메일(2차인증 시 사용)", example = "test@gmail.com")
     @Column
     private String email;
 
-    @ApiModelProperty(value = "2차 인증 보낸 시간", example = "2024-03-01T06:06:12")
+    @Schema(description = "2차 인증 보낸 시간", example = "2024-03-01T06:06:12")
     @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd/HH:mm:ss")
     private LocalDateTime createdDate;
 
-    @ApiModelProperty(value = "랜덤코드", example = "a2d1e3")
+    @Schema(description = "랜덤코드", example = "a2d1e3")
     @Column
     private String randomCode;
 
-    @ApiModelProperty(value = "메일 구분(2차 인증 / 비밀번호 변경)", example = "secondAuth / updatePW")
+    @Schema(description = "메일 구분(2차 인증 / 비밀번호 변경)", example = "secondAuth / updatePW")
     @Column
     private AuthType authType;
 }

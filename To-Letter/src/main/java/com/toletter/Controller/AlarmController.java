@@ -18,9 +18,10 @@ public class AlarmController {
     // 메시지 알림
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "실시간 메일 알람 연결 성공"),
+            @ApiResponse(code = 404, message = "실시간 메일 알람 연결 실패 / 에러 발생"),
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", required = true, dataType = "HttpServletRequest", paramType = "body", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
     @ApiOperation(value = "실시간 알람 연결")
     @GetMapping("/connect")

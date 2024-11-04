@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Builder
 public class ReceivedLetterResponse {
-    @Schema(description = "닉네임")
+    @Schema(description = "닉네임", example = "test")
     private String user_nickname;
 
     @Schema(description = "받은 편지 list")
