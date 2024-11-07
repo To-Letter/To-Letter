@@ -150,7 +150,7 @@ public class KakaoService {
                 User user = userRepository.findByEmail(kakaoUser.getEmail()).orElseThrow();
 
                 if(!user.isSecondConfirmed()){
-                    return ResponseDTO.res(400, "카카오 로그인 실패/ 2차 회원가입(닉네임, 주소)이 제대로 진행이 되지 않음.", "");
+                    return ResponseDTO.res(400, "카카오 로그인 실패/ 2차 회원가입(닉네임, 주소)이 제대로 진행이 되지 않음.", kakaoUser);
                 }
                 if (user.getLoginType().equals(LoginType.localLogin)) {
                     return ResponseDTO.res(403, "카카오 회원가입 실패 / 동일한 이메일 존재", "");
