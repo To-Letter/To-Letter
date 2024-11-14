@@ -3,6 +3,7 @@ package com.toletter.Service;
 import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.letter.GpsDTO;
 import com.toletter.DTO.letter.LetterDTO;
+import com.toletter.DTO.letter.Request.DeleteLetterRequest;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
 import com.toletter.DTO.letter.Response.SentLetterResponse;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -163,14 +165,25 @@ public class LetterService {
     }
 
     // 메일 삭제
-    public ResponseDTO deleteLetter(Long letterID, CustomUserDetails customUserDetails){
+    public ResponseDTO deleteLetter(DeleteLetterRequest deleteLetterRequest, CustomUserDetails customUserDetails){
         User user = customUserDetails.getUser();
-        ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterID).orElseThrow();
+        List<Long> containNotIds = new ArrayList<>();
+        boolean check = true;
 
-        if(!receivedBox.getUserEmail().equals(user.getEmail())){
-            return ResponseDTO.res(401, "메일 삭제 실패 / 본인의 메일이 아님", "");
+        for(Long letterId : deleteLetterRequest.getLetterIds()){
+            ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterId).orElseThrow(() ->
+                new ErrorException("메일 삭제 실패 / 메일("+letterId+")이 없음", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
+            );
+            if(!receivedBox.getUserEmail().equals(user.getEmail())){
+                check = false;
+                containNotIds.add(letterId);
+            }
         }
-        receivedBoxRepository.delete(receivedBox);
+
+        if(!check){
+            return ResponseDTO.res(403, "메일 삭제 실패 / 메일 주인이 아님", containNotIds);
+        }
+        receivedBoxRepository.deleteAllByLetterIds(deleteLetterRequest.getLetterIds());
         return ResponseDTO.res(200, "메일 삭제 성공", "");
     }
 

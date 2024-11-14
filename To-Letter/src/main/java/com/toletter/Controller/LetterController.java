@@ -1,6 +1,7 @@
 package com.toletter.Controller;
 
 import com.toletter.DTO.ResponseDTO;
+import com.toletter.DTO.letter.Request.DeleteLetterRequest;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.LetterService;
@@ -98,15 +99,16 @@ public class LetterController {
     // 메일 삭제
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 삭제 성공"),
-            @ApiResponse(code = 401, message = "메일 삭제 실패 / 본인의 메일이 아님"),
+            @ApiResponse(code = 401, message = "메일 삭제 실패 / 메일(letterId)이 없음"),
+            @ApiResponse(code = 403, message = "메일 삭제 실패 / 메일 주인이 아님")
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
     @ApiOperation(value = "메일 삭제")
     @DeleteMapping("/deleteLetter")
-    public ResponseDTO deleteLetter (@RequestParam Long letterID, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.deleteLetter(letterID, userDetails);
+    public ResponseDTO deleteLetter (@RequestBody DeleteLetterRequest deleteLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.deleteLetter(deleteLetterRequest, userDetails);
 
     }
 }
