@@ -133,18 +133,6 @@ public class LetterService {
         return ResponseDTO.res(200, "읽은 메일 보여주기", receivedLetterResponse);
     }
 
-    // 받은 메일 읽기
-    public ResponseDTO openReceivedLetter(Long letterID, CustomUserDetails userDetails){
-        User user = userDetails.getUser();
-        Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
-
-        if(!user.getEmail().equals(letter.getToUserEmail())){
-            return ResponseDTO.res(401, "받은 메일함 열기 실패 / 본인의 메일이 아님", "");
-        }
-
-        return ResponseDTO.res(200, "메일 읽기 성공", LetterDTO.toDTO(letter));
-    }
-
     // 메일 읽음 처리
     public ResponseDTO viewCheckReceivedLetter(Long letterID, CustomUserDetails userDetails){
         Letter letter = receivedBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
@@ -174,17 +162,6 @@ public class LetterService {
         return ResponseDTO.res(200, "보낸 모든 메일함 열기", SentLetterResponse.res(user.getNickname(), sentListBox));
     }
 
-    // 보낸 메일 읽기
-    public ResponseDTO openSentLetter(Long letterID, CustomUserDetails customUserDetails){
-        User user = customUserDetails.getUser();
-        Letter letter = sentBoxRepository.findByLetterId(letterID).orElseThrow().getLetter();
-
-        if(!user.getEmail().equals(letter.getFromUserEmail())){
-            return ResponseDTO.res(401, "보낸 메일함 열기 실패 / 본인의 메일이 아님", "");
-        }
-        return ResponseDTO.res(200, "보낸 메일 읽기 성공", LetterDTO.toDTO(letter));
-    }
-
     // 메일 삭제
     public ResponseDTO deleteLetter(Long letterID, CustomUserDetails customUserDetails){
         User user = customUserDetails.getUser();
@@ -195,12 +172,6 @@ public class LetterService {
         }
         receivedBoxRepository.delete(receivedBox);
         return ResponseDTO.res(200, "메일 삭제 성공", "");
-    }
-
-    // 메일로 닉네임 찾아오기
-    public String findNickname(String email){
-        String nickname = userRepository.findByEmail(email).get().getNickname();
-        return nickname;
     }
 
     // 거리에 따른 메일 도착 시간

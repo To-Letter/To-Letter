@@ -68,20 +68,6 @@ public class LetterController {
         return letterService.receivedReadLetter(userDetails);
     }
 
-    // 받은 메일 열어서 확인
-    @ApiResponses( value ={
-            @ApiResponse(code = 200, message = "받은 메일함 열기 성공"),
-            @ApiResponse(code = 401, message = "받은 메일함 열기 실패 / 본인의 메일이 아님"),
-    })
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
-    })
-    @ApiOperation(value = "받은 메일함 열기")
-    @GetMapping("/receive/open")
-    public ResponseDTO openReceivedLetter (@RequestParam Long letterID, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.openReceivedLetter(letterID, userDetails);
-    }
-
     // 메일 읽음 처리
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "메일 읽음 처리 성공"),
@@ -107,20 +93,6 @@ public class LetterController {
     @GetMapping("/sent")
     public ResponseDTO viewSentBox (@AuthenticationPrincipal CustomUserDetails userDetails) {
         return letterService.viewSentBox (userDetails);
-    }
-
-    // 보낸 메일 열어서 확인
-    @ApiResponses( value ={
-            @ApiResponse(code = 200, message = "보낸 메일함 열기 성공"),
-            @ApiResponse(code = 401, message = "보낸 메일함 열기 실패 / 본인의 메일이 아님"),
-    })
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
-    })
-    @ApiOperation(value = "보낸 메일함 열기")
-    @GetMapping("/sent/open")
-    public ResponseDTO openSentLetter (@RequestParam Long letterID, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.openSentLetter(letterID, userDetails);
     }
 
     // 메일 삭제
