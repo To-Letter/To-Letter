@@ -36,7 +36,10 @@ public class LetterController {
             @ApiResponse(code = 200, message = "받은 모든 메일함 열기 성공"),
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token"),
+            @ApiImplicitParam(name = "page", value = "현재 페이지", dataType = "int", paramType = "query", example = "0"),
+            @ApiImplicitParam(name = "size", value = "페이지 당 편지 수", dataType = "int", paramType = "query", example = "10"),
+            @ApiImplicitParam(name = "sort", value = "정렬(desc)", dataType = "Sort", paramType = "query", example = "desc")
     })
     @ApiOperation(value = "받은 모든 메일함 열기")
     @GetMapping("/receive")
@@ -49,7 +52,10 @@ public class LetterController {
             @ApiResponse(code = 200, message = "안 읽은 메일함 열기 성공"),
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token"),
+            @ApiImplicitParam(name = "page", value = "현재 페이지", dataType = "int", paramType = "query", example = "0"),
+            @ApiImplicitParam(name = "size", value = "페이지 당 편지 수", dataType = "int", paramType = "query", example = "10"),
+            @ApiImplicitParam(name = "sort", value = "정렬(desc)", dataType = "Sort", paramType = "query", example = "desc")
     })
     @ApiOperation(value = "안 읽은 메일함 열기")
     @GetMapping("/receive/unRead")
@@ -62,7 +68,10 @@ public class LetterController {
             @ApiResponse(code = 200, message = "읽은 메일함 열기 성공"),
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token"),
+            @ApiImplicitParam(name = "page", value = "현재 페이지", dataType = "int", paramType = "query", example = "0"),
+            @ApiImplicitParam(name = "size", value = "페이지 당 편지 수", dataType = "int", paramType = "query", example = "10"),
+            @ApiImplicitParam(name = "sort", value = "정렬(desc)", dataType = "Sort", paramType = "query", example = "desc")
     })
     @ApiOperation(value = "읽은 메일함 열기")
     @GetMapping("/receive/read")
@@ -89,7 +98,10 @@ public class LetterController {
             @ApiResponse(code = 200, message = "보낸 모든 메일함 열기 성공")
     })
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token"),
+            @ApiImplicitParam(name = "page", value = "현재 페이지", dataType = "int", paramType = "query", example = "0"),
+            @ApiImplicitParam(name = "size", value = "페이지 당 편지 수", dataType = "int", paramType = "query", example = "10"),
+            @ApiImplicitParam(name = "sort", value = "정렬(desc)", dataType = "Sort", paramType = "query", example = "desc")
     })
     @ApiOperation(value = "보낸 모든 메일함 열기")
     @GetMapping("/sent")
