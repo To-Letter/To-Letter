@@ -9,6 +9,7 @@ import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,8 +40,8 @@ public class LetterController {
     })
     @ApiOperation(value = "받은 모든 메일함 열기")
     @GetMapping("/receive")
-    public ResponseDTO receivedLetter(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.receivedLetter(userDetails);
+    public ResponseDTO receivedLetter(@AuthenticationPrincipal CustomUserDetails userDetails, Pageable pageable) {
+        return letterService.receivedLetter(userDetails, pageable);
     }
 
     // 안 읽은 메일함 열기
@@ -52,8 +53,8 @@ public class LetterController {
     })
     @ApiOperation(value = "안 읽은 메일함 열기")
     @GetMapping("/receive/unRead")
-    public ResponseDTO receivedUnReadLetter(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.receivedUnReadLetter(userDetails);
+    public ResponseDTO receivedUnReadLetter(@AuthenticationPrincipal CustomUserDetails userDetails, Pageable pageable) {
+        return letterService.receivedUnReadLetter(userDetails, pageable);
     }
 
     // 읽은 메일함 열기
@@ -65,8 +66,8 @@ public class LetterController {
     })
     @ApiOperation(value = "읽은 메일함 열기")
     @GetMapping("/receive/read")
-    public ResponseDTO receivedReadLetter(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.receivedReadLetter(userDetails);
+    public ResponseDTO receivedReadLetter(@AuthenticationPrincipal CustomUserDetails userDetails, Pageable pageable) {
+        return letterService.receivedReadLetter(userDetails, pageable);
     }
 
     // 메일 읽음 처리
@@ -92,8 +93,8 @@ public class LetterController {
     })
     @ApiOperation(value = "보낸 모든 메일함 열기")
     @GetMapping("/sent")
-    public ResponseDTO viewSentBox (@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return letterService.viewSentBox (userDetails);
+    public ResponseDTO viewSentBox (@AuthenticationPrincipal CustomUserDetails userDetails, Pageable pageable) {
+        return letterService.viewSentBox (userDetails, pageable);
     }
 
     // 메일 삭제
