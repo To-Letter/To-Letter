@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.sql.Clob;
 
 @Entity
 @Data
@@ -47,7 +48,8 @@ public class Letter {
     private LocalDateTime arrivedAt;
 
     @Schema(description = "내용", example = "안녕? 나는 조교야! 우리 친하게 지내자!")
-    private String contents;
+    @Lob
+    private Clob content;
 
     @Schema(description = "메일 읽었는지 확인", example = "T / F")
     private Boolean viewCheck;

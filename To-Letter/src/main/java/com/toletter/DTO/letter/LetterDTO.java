@@ -35,15 +35,16 @@ public class LetterDTO {
     @Schema(description = "메일 읽었는지 확인", example = "T / F")
     private Boolean viewCheck;
 
-    public static LetterDTO toDTO(Letter letter) {
+    public static LetterDTO toDTO(Letter letter, String contents) {
         LetterDTO dto = new LetterDTO();
         dto.setId(letter.getId());
         dto.setToUserNickname(letter.getToUserNickname());
         dto.setFromUserNickname(letter.getFromUserNickname());
         dto.setCreatedAt(letter.getCreatedAt());
         dto.setArrivedAt(letter.getArrivedAt());
-        dto.setContents(letter.getContents());
+        dto.setContents(contents);
         dto.setViewCheck(letter.getViewCheck());
         return dto;
     }
+
 }
