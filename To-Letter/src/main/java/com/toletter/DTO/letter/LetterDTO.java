@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.Column;
+import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 
 @Data
@@ -46,4 +47,6 @@ public class LetterDTO {
         dto.setViewCheck(letter.getViewCheck());
         return dto;
     }
+
+
 }
