@@ -11,6 +11,7 @@ import com.toletter.DTO.letter.Response.SentLetterResponse;
 import com.toletter.DTO.letter.SaveReceivedBox;
 import com.toletter.DTO.letter.SaveSentBox;
 import com.toletter.Entity.*;
+import com.toletter.Enums.LetterType;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.*;
@@ -172,20 +173,37 @@ public class LetterService {
         List<Long> containNotIds = new ArrayList<>();
         boolean check = true;
 
-        for(Long letterId : deleteLetterRequest.getLetterIds()){
-            ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterId).orElseThrow(() ->
-                new ErrorException("메일 삭제 실패 / 메일("+letterId+")이 없음", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
-            );
-            if(!receivedBox.getUserEmail().equals(user.getEmail())){
-                check = false;
-                containNotIds.add(letterId);
+        if(deleteLetterRequest.getLetterType().equals(LetterType.receivedLetter)){
+            for(Long letterId : deleteLetterRequest.getLetterIds()){
+                ReceivedBox receivedBox = receivedBoxRepository.findByLetterId(letterId).orElseThrow(() ->
+                        new ErrorException("메일 삭제 실패 / 메일("+letterId+")이 없음", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
+                );
+                if(!receivedBox.getUserEmail().equals(user.getEmail())){
+                    check = false;
+                    containNotIds.add(letterId);
+                }
+            }
+            if(!check){
+                return ResponseDTO.res(403, "메일 삭제 실패 / 메일 주인이 아님", containNotIds);
+            } else {
+                receivedBoxRepository.deleteAllByLetterIds(deleteLetterRequest.getLetterIds());
+            }
+        } else {
+            for(Long letterId : deleteLetterRequest.getLetterIds()){
+                SentBox sentBox = sentBoxRepository.findByLetterId(letterId).orElseThrow(() ->
+                        new ErrorException("메일 삭제 실패 / 메일("+letterId+")이 없음", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
+                );
+                if(!sentBox.getUserEmail().equals(user.getEmail())){
+                    check = false;
+                    containNotIds.add(letterId);
+                }
+            }
+            if(!check){
+                return ResponseDTO.res(403, "메일 삭제 실패 / 메일 주인이 아님", containNotIds);
+            } else {
+                sentBoxRepository.deleteAllByLetterIds(deleteLetterRequest.getLetterIds());
             }
         }
-
-        if(!check){
-            return ResponseDTO.res(403, "메일 삭제 실패 / 메일 주인이 아님", containNotIds);
-        }
-        receivedBoxRepository.deleteAllByLetterIds(deleteLetterRequest.getLetterIds());
         return ResponseDTO.res(200, "메일 삭제 성공", "");
     }
 
