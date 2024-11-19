@@ -1,6 +1,5 @@
 package com.toletter.Repository;
 
-import com.toletter.Entity.ReceivedBox;
 import com.toletter.Entity.SentBox;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -11,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SentBoxRepository extends JpaRepository<SentBox, Long> {
 
