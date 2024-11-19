@@ -12,6 +12,6 @@ public interface SentBoxRepository extends JpaRepository<SentBox, Long> {
 
     Slice<SentBox> findAllByUserEmailOrderBySentTimeDesc(String email, Pageable pageable);
 
-    List<SentBox> findAllByUserEmail(String user_email);
+    Optional<SentBox> findByLetterId(Long letter);
 
 }
