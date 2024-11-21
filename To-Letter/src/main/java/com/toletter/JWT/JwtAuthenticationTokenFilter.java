@@ -31,19 +31,19 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
 
         String token = jwtTokenProvider.resolveAccessToken(request);
-        String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
 
         if(token != null ){ //  accessToken 있으면
             if(jwtTokenProvider.validateToken(response, token) && !redisJwtService.isValidBlackList(token)){ // accessToken 검증
                 this.setAuthentication(token);
             } else { // accessToken 검증 실패 시
+                String refreshToken = jwtTokenProvider.resolveRefreshToken(request);
                 log.info("accessToken 만료");
                 if(jwtTokenProvider.validateToken(response, refreshToken) && !redisJwtService.isValidBlackList(token)){ // refreshToken 검증
                     String newAccessToken = jwtTokenProvider.reissueAccessToken(refreshToken);
                     String newRefreshToken = jwtTokenProvider.reissueRefreshToken(newAccessToken, refreshToken);
 
                     jwtTokenProvider.setHeaderAccessToken(response, newAccessToken);
-                    jwtTokenProvider.setHeaderRefreshToken(response, newRefreshToken);
+                    jwtTokenProvider.setCookieRefreshToken(response, newRefreshToken);
                     this.setAuthentication(newAccessToken);
                 } else {
                     JwtExceptionFilter.setTokenErrorResponse(response, JwtErrorCode.EXPIRED_TOKEN,"refreshToken 만료되었습니다. 다시 로그인하세요");

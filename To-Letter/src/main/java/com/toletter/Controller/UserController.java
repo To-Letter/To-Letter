@@ -160,8 +160,8 @@ public class UserController {
     })
     @ApiOperation(value = "로그아웃")
     @GetMapping("/logout")
-    public ResponseDTO updateUser(HttpServletRequest httpServletRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return userService.logout(httpServletRequest, userDetails);
+    public ResponseDTO logout(HttpServletRequest httpServletRequest, HttpServletResponse response, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return userService.logout(httpServletRequest, response, userDetails);
     }
 
     // 2차 인증
@@ -207,7 +207,7 @@ public class UserController {
     })
     @ApiOperation(value = "유저 탈퇴")
     @DeleteMapping("/delete")
-    public ResponseDTO userDelete(HttpServletRequest httpServletRequest, @RequestBody UserDeleteRequest userDeleteRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return userService.userDelete(httpServletRequest, userDeleteRequest, userDetails);
+    public ResponseDTO userDelete(HttpServletRequest httpServletRequest, HttpServletResponse response, @RequestBody UserDeleteRequest userDeleteRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return userService.userDelete(httpServletRequest, response, userDeleteRequest, userDetails);
     }
 }
