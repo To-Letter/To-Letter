@@ -1,6 +1,8 @@
 package com.toletter.Repository;
 
 import com.toletter.Entity.SentBox;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,9 +14,9 @@ import java.util.Optional;
 
 public interface SentBoxRepository extends JpaRepository<SentBox, Long> {
 
-    Optional<SentBox> findByLetterId(Long letter);
+    Slice<SentBox> findAllByUserEmailOrderBySentTimeDesc(String email, Pageable pageable);
 
-    List<SentBox> findAllByUserEmail(String user_email);
+    Optional<SentBox> findByLetterId(Long letter);
 
     @Modifying
     @Transactional

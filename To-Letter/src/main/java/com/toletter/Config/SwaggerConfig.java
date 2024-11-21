@@ -2,6 +2,7 @@ package com.toletter.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -21,7 +22,7 @@ public class SwaggerConfig {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .ignoredParameterTypes(AuthenticationPrincipal.class)
+                .ignoredParameterTypes(AuthenticationPrincipal.class, Pageable.class)
                 .apiInfo(apiInfo())
                 .securityContexts(securityContext()) // SecurityContext 설정
                 .securitySchemes(apiKey()) // ApiKey 설정

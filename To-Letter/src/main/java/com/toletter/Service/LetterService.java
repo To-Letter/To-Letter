@@ -5,6 +5,7 @@ import com.toletter.DTO.letter.GpsDTO;
 import com.toletter.DTO.letter.LetterDTO;
 import com.toletter.DTO.letter.Request.DeleteLetterRequest;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
+import com.toletter.DTO.letter.Response.LetterResponse;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
 import com.toletter.DTO.letter.Response.SentLetterResponse;
 import com.toletter.DTO.letter.SaveReceivedBox;
@@ -16,7 +17,9 @@ import com.toletter.Error.ErrorException;
 import com.toletter.Repository.*;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import javax.sql.rowset.serial.SerialClob;
 import java.io.BufferedReader;
@@ -97,11 +100,11 @@ public class LetterService {
     }
 
     // 모든 받은 메일함 열기
-    public ResponseDTO receivedLetter (CustomUserDetails userDetails) {
+    public ResponseDTO receivedLetter (CustomUserDetails userDetails, Pageable pageable){
         User user =  userDetails.getUser();
 
-        List<ReceivedBox> listBox = receivedBoxRepository.findAllByUserEmail(user.getEmail());
-        List<LetterDTO> LetterList = listBox.stream()
+        Slice<ReceivedBox> slice = receivedBoxRepository.findAllByUserEmailOrderByReceivedTimeDesc(user.getEmail(), pageable);
+        List<LetterDTO> letterList = slice.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .map(letter -> {
@@ -110,16 +113,15 @@ public class LetterService {
                 })
                 .collect(Collectors.toList());
 
-        ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), LetterList);
-        return ResponseDTO.res(200, "모든 메일 보여주기", receivedLetterResponse);
+        return ResponseDTO.res(200, "모든 메일 보여주기", LetterResponse.res(letterList, pageable));
     }
 
     // 안 읽은 받은 메일함 열기
-    public ResponseDTO receivedUnReadLetter(CustomUserDetails userDetails){
+    public ResponseDTO receivedUnReadLetter(CustomUserDetails userDetails, Pageable pageable){
         User user =  userDetails.getUser();
 
-        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserEmail(user.getEmail());
-        List<LetterDTO> unReadListBox = letterList.stream()
+        Slice<ReceivedBox> slice = receivedBoxRepository.findAllByUserEmailOrderByReceivedTimeDesc(user.getEmail(), pageable);
+        List<LetterDTO> unReadListBox = slice.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(Objects::nonNull)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
@@ -131,15 +133,15 @@ public class LetterService {
                 .collect(Collectors.toList());
 
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), unReadListBox);
-        return ResponseDTO.res(200, "안 읽은 메일 보여주기", receivedLetterResponse);
+        return ResponseDTO.res(200, "안 읽은 메일 보여주기", LetterResponse.res(unReadListBox, pageable));
     }
 
     // 읽은 받은 메일함 열기
-    public ResponseDTO receivedReadLetter(CustomUserDetails userDetails){
+    public ResponseDTO receivedReadLetter(CustomUserDetails userDetails, Pageable pageable){
         User user =  userDetails.getUser();
 
-        List<ReceivedBox> letterList = receivedBoxRepository.findAllByUserEmail(user.getEmail());
-        List<LetterDTO> readListBox = letterList.stream()
+        Slice<ReceivedBox> slice = receivedBoxRepository.findAllByUserEmailOrderByReceivedTimeDesc(user.getEmail(), pageable);
+        List<LetterDTO> readListBox = slice.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(Objects::nonNull)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
@@ -151,7 +153,7 @@ public class LetterService {
                 .collect(Collectors.toList());
 
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), readListBox);
-        return ResponseDTO.res(200, "읽은 메일 보여주기", receivedLetterResponse);
+        return ResponseDTO.res(200, "읽은 메일 보여주기", LetterResponse.res(readListBox, pageable));
     }
 
     // 메일 읽음 처리
@@ -170,11 +172,11 @@ public class LetterService {
     }
 
     // 보낸 메일함 열기
-    public ResponseDTO viewSentBox(CustomUserDetails customUserDetails){
+    public ResponseDTO viewSentBox(CustomUserDetails customUserDetails, Pageable pageable){
         User user = customUserDetails.getUser();
 
-        List<SentBox> letterList = sentBoxRepository.findAllByUserEmail(user.getEmail());
-        List<LetterDTO> sentListBox = letterList.stream()
+        Slice<SentBox> slice = sentBoxRepository.findAllByUserEmailOrderBySentTimeDesc(user.getEmail(), pageable);
+        List<LetterDTO> sentListBox = slice.stream()
                 .map(SentBox::getLetter)
                 .filter(Objects::nonNull)
                 .map(letter -> {
@@ -183,7 +185,7 @@ public class LetterService {
                 })
                 .collect(Collectors.toList());
 
-        return ResponseDTO.res(200, "보낸 모든 메일함 열기", SentLetterResponse.res(user.getNickname(), sentListBox));
+        return ResponseDTO.res(200, "보낸 모든 메일함 열기", SentLetterResponse.res(user.getNickname(), pageable, sentListBox));
     }
 
     // 메일 삭제
