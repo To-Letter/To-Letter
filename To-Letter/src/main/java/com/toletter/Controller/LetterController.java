@@ -11,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
+import java.sql.SQLException;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/letter")
@@ -27,7 +29,7 @@ public class LetterController {
     })
     @ApiOperation(value = "메일 보내기")
     @PostMapping("/send")
-    public ResponseDTO sendLetter(@RequestBody SendLetterRequest sendLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseDTO sendLetter(@RequestBody SendLetterRequest sendLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) throws SQLException {
         return letterService.sendLetter(sendLetterRequest, userDetails);
     }
 

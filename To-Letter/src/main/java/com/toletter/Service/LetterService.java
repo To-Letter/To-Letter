@@ -21,6 +21,12 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import javax.sql.rowset.serial.SerialClob;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,12 +45,15 @@ public class LetterService {
     private final AlarmService alarmService;
 
     // 메일 보내기
-    public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails){
+    public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails) throws SQLException {
         User fromUser =  userDetails.getUser(); // 보내는 유저
         User toUser = userRepository.findByNickname(sendLetterRequest.getToUserNickname()).orElseThrow(() ->
                 new ErrorException("메일 보내기 실패 / 보낼 유저가 없음(유저가 존재하지 않음)", 200, ErrorCode.FORBIDDEN_EXCEPTION)
         ); // 받는 유저
-        Letter letter = sendLetterRequest.toEntity(toUser.getEmail());
+        // String으로 받은 편지내용을 Clob으로 변경
+        Clob clobContent = new SerialClob(sendLetterRequest.getContents().toCharArray());
+
+        Letter letter = sendLetterRequest.toEntity(toUser.getEmail(), clobContent);
 
         Map fromUserGPS = gpsService.getGpsUrl(fromUser.getAddress()); // 보내는 유저 위도 경도 구함
         Map toUserGPS = gpsService.getGpsUrl(toUser.getAddress()); // 받는 유저 위도 경도 구함
@@ -98,8 +107,11 @@ public class LetterService {
         List<LetterDTO> letterList = slice.stream()
                 .map(ReceivedBox::getLetter)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
-                .map(LetterDTO::toDTO)
-                .toList();
+                .map(letter -> {
+                    String content = convertClobToString(letter.getContent());
+                    return LetterDTO.toDTO(letter, content);
+                })
+                .collect(Collectors.toList());
 
         return ResponseDTO.res(200, "모든 메일 보여주기", LetterResponse.res(letterList, pageable));
     }
@@ -114,7 +126,10 @@ public class LetterService {
                 .filter(Objects::nonNull)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .filter(letter -> !letter.getViewCheck())
-                .map(LetterDTO::toDTO)
+                .map(letter -> {
+                    String content = convertClobToString(letter.getContent());
+                    return LetterDTO.toDTO(letter, content);
+                })
                 .collect(Collectors.toList());
 
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), unReadListBox);
@@ -131,7 +146,10 @@ public class LetterService {
                 .filter(Objects::nonNull)
                 .filter(letter -> letter.getArrivedAt().isBefore(LocalDateTime.now()))
                 .filter(Letter::getViewCheck)
-                .map(LetterDTO::toDTO)
+                .map(letter -> {
+                    String content = convertClobToString(letter.getContent());
+                    return LetterDTO.toDTO(letter, content);
+                })
                 .collect(Collectors.toList());
 
         ReceivedLetterResponse receivedLetterResponse = ReceivedLetterResponse.res(user.getNickname(), readListBox);
@@ -148,8 +166,8 @@ public class LetterService {
         }
         letter.updateViewCheck();
         letterRepository.save(letter);
-
-        LetterDTO letterDTO = LetterDTO.toDTO(letter);
+        String content = this.convertClobToString(letter.getContent());
+        LetterDTO letterDTO = LetterDTO.toDTO(letter, content);
         return ResponseDTO.res(200, "메일 읽기 성공", letterDTO);
     }
 
@@ -161,7 +179,10 @@ public class LetterService {
         List<LetterDTO> sentListBox = slice.stream()
                 .map(SentBox::getLetter)
                 .filter(Objects::nonNull)
-                .map(LetterDTO::toDTO)
+                .map(letter -> {
+                    String content = convertClobToString(letter.getContent());
+                    return LetterDTO.toDTO(letter, content);
+                })
                 .collect(Collectors.toList());
 
         return ResponseDTO.res(200, "보낸 모든 메일함 열기", SentLetterResponse.res(user.getNickname(), pageable, sentListBox));
@@ -224,5 +245,18 @@ public class LetterService {
         } else {
             throw new ErrorException("거리가 나오지 않습니다.", 404,ErrorCode.NOT_FOUND_EXCEPTION);
         }
+    }
+
+    public String convertClobToString(Clob clob) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try(Reader reader = clob.getCharacterStream(); BufferedReader bufferedReader = new BufferedReader(reader)){
+            String line;
+            while((line = bufferedReader.readLine()) != null){
+                stringBuilder.append(line);
+            }
+        } catch (IOException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return stringBuilder.toString();
     }
 }

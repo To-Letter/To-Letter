@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.sql.Clob;
+
 @Data
 @RequiredArgsConstructor
 public class SendLetterRequest {
@@ -17,10 +19,10 @@ public class SendLetterRequest {
     @Schema(description = "보낸 메시지함에 저장할 지 말지 체크", example = "T/F")
     private boolean saveLetterCheck;
 
-    public Letter toEntity(String toUserEmail) {
+    public Letter toEntity(String toUserEmail, Clob content) {
         return Letter.builder()
                 .toUserEmail(toUserEmail)
-                .contents(contents)
+                .content(content)
                 .build();
     }
 }
