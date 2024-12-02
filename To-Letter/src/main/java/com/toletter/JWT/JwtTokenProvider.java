@@ -10,6 +10,8 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -37,6 +39,9 @@ public class JwtTokenProvider {
     // 리프레시 토큰 유효시간 | 7d
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenValidTime;
+
+    @Value("${domain.api}")
+    private String domain;
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
     @PostConstruct // 의존성 주입 후, 초기화를 수행
@@ -129,7 +134,7 @@ public class JwtTokenProvider {
         Cookie[] cookies = request.getCookies();
         for(Cookie row : cookies){
             if(row.getName().equals("RefreshToken")){
-                return row.getValue().substring(6);
+                return row.getValue();
             }
         }
         return null;
@@ -186,12 +191,15 @@ public class JwtTokenProvider {
 
     // 리프레시 토큰 헤더 설정
     public void setCookieRefreshToken(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie("RefreshToken", "bearer"+ refreshToken);
-        cookie.setDomain("localhost");
-        cookie.setPath("/"); // 쿠키 경로
-        cookie.setMaxAge((int) refreshTokenValidTime); // 유효시간
-        cookie.setSecure(false); // Secure 속성 설정(HTTPS 필요) -> 후에 true로 변경 예정
-        cookie.setHttpOnly(true); // js를 통해 쿠키에 접근 불가
-        response.addCookie(cookie);
+        ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", refreshToken)
+                .domain(domain)
+                .path("/") // 쿠키 경로
+                .maxAge(refreshTokenValidTime) // 유효시간
+                .secure(false) // Secure 속성 설정(HTTPS 필요) -> 후에 true로 변경 예정
+                .httpOnly(true) // js를 통해 쿠키에 접근 불가
+                .sameSite("None") // 다른 도메인에서의 호출을 막기에 전달이 가능하도록 수정함
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
     }
 }
