@@ -1,15 +1,13 @@
 package com.toletter.Service;
 
 import com.toletter.DTO.ResponseDTO;
-import com.toletter.DTO.letter.GpsDTO;
-import com.toletter.DTO.letter.LetterDTO;
+import com.toletter.DTO.letter.*;
 import com.toletter.DTO.letter.Request.DeleteLetterRequest;
+import com.toletter.DTO.letter.Request.SearchLetterRequest;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.DTO.letter.Response.LetterResponse;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
 import com.toletter.DTO.letter.Response.SentLetterResponse;
-import com.toletter.DTO.letter.SaveReceivedBox;
-import com.toletter.DTO.letter.SaveSentBox;
 import com.toletter.Entity.*;
 import com.toletter.Enums.LetterType;
 import com.toletter.Error.ErrorCode;
@@ -226,6 +224,36 @@ public class LetterService {
             }
         }
         return ResponseDTO.res(200, "메일 삭제 성공", "");
+    }
+
+    // 메일 검색
+    public ResponseDTO searchLetter(SearchLetterRequest searchLetterRequest, CustomUserDetails customUserDetails){
+        User user = customUserDetails.getUser();
+        String searchData = searchLetterRequest.getSearchData();
+        List<SearchLetterDTO> searchLetters = new ArrayList<>();
+        if(searchLetterRequest.getLetterType().equals(LetterType.receivedLetter)){
+            List<ReceivedBox> slice = receivedBoxRepository.findAllByUserEmail(user.getEmail());
+            searchLetters = slice.stream()
+                    .map(ReceivedBox::getLetter)
+                    .filter(letter -> letter.getFromUserNickname().matches("(.*)"+searchData+"(.*)") || this.convertClobToString(letter.getContent()).matches("(.*)"+searchData+"(.*)"))
+                    .map(letter -> {
+                        String content = convertClobToString(letter.getContent());
+                        return SearchLetterDTO.toDTO(letter, content);
+                    })
+                    .collect(Collectors.toList());
+        } else {
+            List<SentBox> slice = sentBoxRepository.findAllByUserEmail(user.getEmail());
+            searchLetters = slice.stream()
+                    .map(SentBox::getLetter)
+                    .filter(letter -> letter.getToUserNickname().matches("(.*)"+searchData+"(.*)") || this.convertClobToString(letter.getContent()).matches("(.*)"+searchData+"(.*)"))
+                    .map(letter -> {
+                        String content = convertClobToString(letter.getContent());
+                        return SearchLetterDTO.toDTO(letter, content);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return ResponseDTO.res(200, "보낸 모든 메일함 열기", searchLetters);
     }
 
     // 거리에 따른 메일 도착 시간

@@ -1,8 +1,6 @@
 package com.toletter.Repository;
 
-import com.toletter.DTO.letter.LetterDTO;
 import com.toletter.Entity.ReceivedBox;
-import com.toletter.Entity.User;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,6 +17,8 @@ public interface ReceivedBoxRepository extends JpaRepository<ReceivedBox, Long> 
     Optional<ReceivedBox> findByLetterId(Long letter);
 
     Slice<ReceivedBox> findAllByUserEmailOrderByReceivedTimeDesc(String email, Pageable pageable);
+
+    List<ReceivedBox> findAllByUserEmail(String email);
 
     @Modifying
     @Transactional

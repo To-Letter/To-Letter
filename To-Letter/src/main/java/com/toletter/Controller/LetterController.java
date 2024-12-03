@@ -2,6 +2,7 @@ package com.toletter.Controller;
 
 import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.letter.Request.DeleteLetterRequest;
+import com.toletter.DTO.letter.Request.SearchLetterRequest;
 import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.LetterService;
@@ -124,6 +125,20 @@ public class LetterController {
     @DeleteMapping("/deleteLetter")
     public ResponseDTO deleteLetter (@RequestBody DeleteLetterRequest deleteLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return letterService.deleteLetter(deleteLetterRequest, userDetails);
+
+    }
+
+    // 메일 검색
+    @ApiResponses( value ={
+            @ApiResponse(code = 200, message = "메일 검색 성공"),
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
+    })
+    @ApiOperation(value = "메일 삭제")
+    @GetMapping("/searchLetter")
+    public ResponseDTO searchLetter (@RequestBody SearchLetterRequest searchLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return letterService.searchLetter(searchLetterRequest, userDetails);
 
     }
 }

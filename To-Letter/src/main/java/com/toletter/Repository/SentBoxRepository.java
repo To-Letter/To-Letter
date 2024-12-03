@@ -18,6 +18,8 @@ public interface SentBoxRepository extends JpaRepository<SentBox, Long> {
 
     Optional<SentBox> findByLetterId(Long letter);
 
+    List<SentBox> findAllByUserEmail(String email);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM SentBox s WHERE s.letter.id in :letterIds")
