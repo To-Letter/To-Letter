@@ -18,6 +18,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    ## .p12 파일 생성
+    - name: Make .p12 file
+      run: | 
+        cd ./To-Letter/src/main/resources
+        echo "${{ secrets.SSH_KEY }}" | base64 --decode > ./keystore.p12 
+      shell: bash
+
     ## application.yml 파일 생성
     - name: Make application.yml
       run: |
