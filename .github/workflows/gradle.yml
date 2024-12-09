@@ -40,10 +40,6 @@ jobs:
         chmod +x ./gradlew
         ./gradlew clean build --exclude-task test
 
-    - name: Deploy application 
-      run: | 
-        sudo nohup java -jar ./To-Letter/build/libs/To-Letter-0.0.1-SNAPSHOT.jar
-
     ## docker 로그인, 이미지 빌드, hub에 푸시
     - name: Web Docker build and push
       run: |
