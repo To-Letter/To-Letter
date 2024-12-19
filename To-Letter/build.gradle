@@ -45,6 +45,9 @@ dependencies {
     implementation 'org.projectlombok:lombok'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    // elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    implementation 'jakarta.json:jakarta.json-api:2.0.1'
     // json
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'

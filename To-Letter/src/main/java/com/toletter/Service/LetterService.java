@@ -8,11 +8,13 @@ import com.toletter.DTO.letter.Request.SendLetterRequest;
 import com.toletter.DTO.letter.Response.LetterResponse;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
 import com.toletter.DTO.letter.Response.SentLetterResponse;
+import com.toletter.Document.LetterDocument;
 import com.toletter.Entity.*;
 import com.toletter.Enums.LetterType;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.*;
+import com.toletter.Repository.ElasticSearch.LetterDocumentRepository;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
@@ -41,6 +43,8 @@ public class LetterService {
     private final GPSService gpsService;
     private final UserRepository userRepository;
     private final AlarmService alarmService;
+    private final LetterDocumentRepository letterDocumentRepository;
+
 
     // 메일 보내기
     public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails) throws SQLException {
@@ -75,6 +79,7 @@ public class LetterService {
         letter.setArrivedAt(arrivedTime);
         letter.setViewCheck(false);
         letterRepository.save(letter);
+        letterDocumentRepository.save(LetterDocument.from(SearchLetterDTO.toDTO(letter, sendLetterRequest.getContents())));
 
         // 보낸 메일함에 저장
         if(sendLetterRequest.isSaveLetterCheck()){
