@@ -135,8 +135,8 @@ public class LetterController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
-    @ApiOperation(value = "메일 삭제")
-    @GetMapping("/searchLetter")
+    @ApiOperation(value = "메일 검색")
+    @PostMapping("/searchLetter")
     public ResponseDTO searchLetter (@RequestBody SearchLetterRequest searchLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return letterService.searchLetter(searchLetterRequest, userDetails);
 

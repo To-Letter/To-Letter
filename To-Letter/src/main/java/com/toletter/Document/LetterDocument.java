@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Builder
-@Document(indexName = "item")
+@Document(indexName = "letter")
 public class LetterDocument {
     @Id
     private Long id;

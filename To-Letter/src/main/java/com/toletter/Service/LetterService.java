@@ -9,12 +9,15 @@ import com.toletter.DTO.letter.Response.LetterResponse;
 import com.toletter.DTO.letter.Response.ReceivedLetterResponse;
 import com.toletter.DTO.letter.Response.SentLetterResponse;
 import com.toletter.Document.LetterDocument;
+import com.toletter.Document.ReceivedBoxDocument;
+import com.toletter.Document.SentBoxDocument;
 import com.toletter.Entity.*;
 import com.toletter.Enums.LetterType;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.*;
-import com.toletter.Repository.ElasticSearch.LetterDocumentRepository;
+import com.toletter.Repository.ElasticSearch.ReceivedBoxDocumentRepository;
+import com.toletter.Repository.ElasticSearch.SentBoxDocumentRepository;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
@@ -43,8 +46,8 @@ public class LetterService {
     private final GPSService gpsService;
     private final UserRepository userRepository;
     private final AlarmService alarmService;
-    private final LetterDocumentRepository letterDocumentRepository;
-
+    private final ReceivedBoxDocumentRepository receivedBoxDocumentRepository;
+    private final SentBoxDocumentRepository sentBoxDocumentRepository;
 
     // 메일 보내기
     public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails) throws SQLException {
@@ -79,7 +82,8 @@ public class LetterService {
         letter.setArrivedAt(arrivedTime);
         letter.setViewCheck(false);
         letterRepository.save(letter);
-        letterDocumentRepository.save(LetterDocument.from(SearchLetterDTO.toDTO(letter, sendLetterRequest.getContents())));
+
+        LetterDocument letterDocument = LetterDocument.from(SearchLetterDTO.toDTO(letter, sendLetterRequest.getContents()));
 
         // 보낸 메일함에 저장
         if(sendLetterRequest.isSaveLetterCheck()){
@@ -87,7 +91,8 @@ public class LetterService {
             saveBoxDTO.setFromUserEmail(fromUser.getEmail());
             saveBoxDTO.setSentTime(letter.getCreatedAt());
             saveBoxDTO.setLetter(letter);
-            sentBoxRepository.save(saveBoxDTO.toEntity());
+            SentBox sentBox = sentBoxRepository.save(saveBoxDTO.toEntity());
+            sentBoxDocumentRepository.save(SentBoxDocument.from(sentBox, letterDocument));
         }
 
         // 받는 메일함에 저장
@@ -95,7 +100,8 @@ public class LetterService {
         saveReceivedBox.setToUserEmail(toUser.getEmail());
         saveReceivedBox.setReceivedTime(arrivedTime);
         saveReceivedBox.setLetter(letter);
-        receivedBoxRepository.save(saveReceivedBox.toEntity());
+        ReceivedBox receivedBox = receivedBoxRepository.save(saveReceivedBox.toEntity());
+        receivedBoxDocumentRepository.save(ReceivedBoxDocument.from(receivedBox, letterDocument));
 
         // 알림 보내기
         alarmService.scheduleTask(toUser.getNickname(), letter, arrivedDay);
@@ -233,28 +239,21 @@ public class LetterService {
 
     // 메일 검색
     public ResponseDTO searchLetter(SearchLetterRequest searchLetterRequest, CustomUserDetails customUserDetails){
-        User user = customUserDetails.getUser();
+        String userEmail = customUserDetails.getUser().getEmail();
         String searchData = searchLetterRequest.getSearchData();
-        List<SearchLetterDTO> searchLetters = new ArrayList<>();
+
+        List<LetterDocument> searchLetters;
         if(searchLetterRequest.getLetterType().equals(LetterType.receivedLetter)){
-            List<ReceivedBox> slice = receivedBoxRepository.findAllByUserEmail(user.getEmail());
+            List<ReceivedBoxDocument> slice = receivedBoxDocumentRepository.findAllByUserEmailAndLetterToUserNicknameOrContentContaining(userEmail, searchData, searchData);
             searchLetters = slice.stream()
-                    .map(ReceivedBox::getLetter)
-                    .filter(letter -> letter.getFromUserNickname().matches("(.*)"+searchData+"(.*)") || this.convertClobToString(letter.getContent()).matches("(.*)"+searchData+"(.*)"))
-                    .map(letter -> {
-                        String content = convertClobToString(letter.getContent());
-                        return SearchLetterDTO.toDTO(letter, content);
-                    })
+                    .filter(Objects::nonNull)
+                    .map(ReceivedBoxDocument::getLetter)
                     .collect(Collectors.toList());
         } else {
-            List<SentBox> slice = sentBoxRepository.findAllByUserEmail(user.getEmail());
+            List<SentBoxDocument> slice = sentBoxDocumentRepository.findAllByLetterContentContainingOrLetterToUserNicknameContainingOrderBySentTimeDesc(userEmail, searchData, searchData);
             searchLetters = slice.stream()
-                    .map(SentBox::getLetter)
-                    .filter(letter -> letter.getToUserNickname().matches("(.*)"+searchData+"(.*)") || this.convertClobToString(letter.getContent()).matches("(.*)"+searchData+"(.*)"))
-                    .map(letter -> {
-                        String content = convertClobToString(letter.getContent());
-                        return SearchLetterDTO.toDTO(letter, content);
-                    })
+                    .filter(Objects::nonNull)
+                    .map(SentBoxDocument::getLetter)
                     .collect(Collectors.toList());
         }
 
