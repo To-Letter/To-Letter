@@ -139,6 +139,5 @@ public class LetterController {
     @PostMapping("/searchLetter")
     public ResponseDTO searchLetter (@RequestBody SearchLetterRequest searchLetterRequest, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return letterService.searchLetter(searchLetterRequest, userDetails);
-
     }
 }

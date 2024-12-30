@@ -20,7 +20,16 @@ import com.toletter.Repository.ElasticSearch.ReceivedBoxDocumentRepository;
 import com.toletter.Repository.ElasticSearch.SentBoxDocumentRepository;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.apache.lucene.search.join.ScoreMode;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
@@ -48,6 +57,7 @@ public class LetterService {
     private final AlarmService alarmService;
     private final ReceivedBoxDocumentRepository receivedBoxDocumentRepository;
     private final SentBoxDocumentRepository sentBoxDocumentRepository;
+    private final ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     // 메일 보내기
     public ResponseDTO sendLetter(SendLetterRequest sendLetterRequest, CustomUserDetails userDetails) throws SQLException {
@@ -242,22 +252,48 @@ public class LetterService {
         String userEmail = customUserDetails.getUser().getEmail();
         String searchData = searchLetterRequest.getSearchData();
 
-        List<LetterDocument> searchLetters;
+        List<LetterDTO> searchLetters;
         if(searchLetterRequest.getLetterType().equals(LetterType.receivedLetter)){
-            List<ReceivedBoxDocument> slice = receivedBoxDocumentRepository.findAllByUserEmailAndLetterToUserNicknameOrContentContaining(userEmail, searchData, searchData);
-            searchLetters = slice.stream()
-                    .filter(Objects::nonNull)
+            Query searchQuery = new NativeSearchQueryBuilder()
+                    .withQuery(QueryBuilders.boolQuery()
+                            .must(QueryBuilders.matchPhraseQuery("userEmail", userEmail))
+                            .must(QueryBuilders.nestedQuery("letter", QueryBuilders.boolQuery()
+                                    .should(QueryBuilders.wildcardQuery("letter.fromUserNickname", "*" + searchData + "*"))
+                                    .should(QueryBuilders.wildcardQuery("letter.content", "*" + searchData + "*")), ScoreMode.Max)) )
+                    .withSort(Sort.by(Sort.Direction.DESC, "receivedTime"))
+                    .withPageable(PageRequest.of(searchLetterRequest.getPageNumber(), searchLetterRequest.getPageSize()))
+                    .build();
+
+            SearchHits<ReceivedBoxDocument> searchHits = elasticsearchRestTemplate.search(searchQuery, ReceivedBoxDocument.class);
+
+            searchLetters = searchHits.stream()
+                    .map(SearchHit::getContent)
                     .map(ReceivedBoxDocument::getLetter)
+                    .filter(Objects::nonNull)
+                    .map(LetterDTO::toDocumentDTO)
                     .collect(Collectors.toList());
         } else {
-            List<SentBoxDocument> slice = sentBoxDocumentRepository.findAllByLetterContentContainingOrLetterToUserNicknameContainingOrderBySentTimeDesc(userEmail, searchData, searchData);
-            searchLetters = slice.stream()
-                    .filter(Objects::nonNull)
+            Query searchQuery = new NativeSearchQueryBuilder()
+                    .withQuery(QueryBuilders.boolQuery()
+                            .must(QueryBuilders.matchPhraseQuery("userEmail", userEmail))
+                            .must(QueryBuilders.nestedQuery("letter", QueryBuilders.boolQuery()
+                                    .should(QueryBuilders.wildcardQuery("letter.toUserNickname", "*" + searchData + "*"))
+                                    .should(QueryBuilders.wildcardQuery("letter.content", "*" + searchData + "*")), ScoreMode.Max)) )
+                    .withSort(Sort.by(Sort.Direction.DESC, "sentTime"))
+                    .withPageable(PageRequest.of(searchLetterRequest.getPageNumber(), searchLetterRequest.getPageSize()))
+                    .build();
+
+            SearchHits<SentBoxDocument> searchHits = elasticsearchRestTemplate.search(searchQuery, SentBoxDocument.class);
+
+            searchLetters = searchHits.stream()
+                    .map(SearchHit::getContent)
                     .map(SentBoxDocument::getLetter)
+                    .filter(Objects::nonNull)
+                    .map(LetterDTO::toDocumentDTO)
                     .collect(Collectors.toList());
         }
 
-        return ResponseDTO.res(200, "보낸 모든 메일함 열기", searchLetters);
+        return ResponseDTO.res(200, "메일 검색 성공", searchLetters);
     }
 
     // 거리에 따른 메일 도착 시간

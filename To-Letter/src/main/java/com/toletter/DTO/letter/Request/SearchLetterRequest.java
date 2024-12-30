@@ -5,8 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @Data
 @RequiredArgsConstructor
 public class SearchLetterRequest {
@@ -15,4 +13,10 @@ public class SearchLetterRequest {
 
     @Schema(description = "검색할 내용", example = "test")
     private String searchData;
+
+    @Schema(description = "페이징 pageNumber", example = "pageNumber, pageSize, sort")
+    private int pageNumber;
+
+    @Schema(description = "페이징 pageSize", example = "pageNumber, pageSize, sort")
+    private int pageSize;
 }

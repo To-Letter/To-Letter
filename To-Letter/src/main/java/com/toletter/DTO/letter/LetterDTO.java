@@ -1,12 +1,12 @@
 package com.toletter.DTO.letter;
 
+import com.toletter.Document.LetterDocument;
 import com.toletter.Entity.Letter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.Column;
-import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 
 @Data
@@ -45,6 +45,18 @@ public class LetterDTO {
         dto.setArrivedAt(letter.getArrivedAt());
         dto.setContents(contents);
         dto.setViewCheck(letter.getViewCheck());
+        return dto;
+    }
+
+    public static LetterDTO toDocumentDTO(LetterDocument letterDocument){
+        LetterDTO dto = new LetterDTO();
+        dto.setId(letterDocument.getId());
+        dto.setToUserNickname(letterDocument.getToUserNickname());
+        dto.setFromUserNickname(letterDocument.getFromUserNickname());
+        dto.setCreatedAt(letterDocument.getCreatedAt());
+        dto.setArrivedAt(letterDocument.getArrivedAt());
+        dto.setContents(letterDocument.getContent());
+        dto.setViewCheck(letterDocument.getViewCheck());
         return dto;
     }
 }
