@@ -20,8 +20,11 @@ import com.toletter.Repository.ElasticSearch.ReceivedBoxDocumentRepository;
 import com.toletter.Repository.ElasticSearch.SentBoxDocumentRepository;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -227,6 +230,11 @@ public class LetterService {
                 return ResponseDTO.res(403, "메일 삭제 실패 / 메일 주인이 아님", containNotIds);
             } else {
                 receivedBoxRepository.deleteAllByLetterIds(deleteLetterRequest.getLetterIds());
+                Query deleteQuery = new NativeSearchQueryBuilder()
+                        .withQuery(QueryBuilders.nestedQuery("letter",
+                                QueryBuilders.termsQuery("letter.id", deleteLetterRequest.getLetterIds()), ScoreMode.Max))
+                        .build();
+                elasticsearchRestTemplate.delete(deleteQuery, ReceivedBoxDocument.class);
             }
         } else {
             for(Long letterId : deleteLetterRequest.getLetterIds()){
@@ -242,6 +250,11 @@ public class LetterService {
                 return ResponseDTO.res(403, "메일 삭제 실패 / 메일 주인이 아님", containNotIds);
             } else {
                 sentBoxRepository.deleteAllByLetterIds(deleteLetterRequest.getLetterIds());
+                Query deleteQuery = new NativeSearchQueryBuilder()
+                        .withQuery(QueryBuilders.nestedQuery("letter",
+                                QueryBuilders.termsQuery("letter.id", deleteLetterRequest.getLetterIds()), ScoreMode.Max))
+                        .build();
+                elasticsearchRestTemplate.delete(deleteQuery, SentBoxDocument.class);
             }
         }
         return ResponseDTO.res(200, "메일 삭제 성공", "");
