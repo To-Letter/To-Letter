@@ -195,7 +195,7 @@ public class JwtTokenProvider {
                 .domain(domain)
                 .path("/") // 쿠키 경로
                 .maxAge(refreshTokenValidTime) // 유효시간
-                .secure(false) // Secure 속성 설정(HTTPS 필요) -> 후에 true로 변경 예정
+                .secure(true)
                 .httpOnly(true) // js를 통해 쿠키에 접근 불가
                 .sameSite("None") // 다른 도메인에서의 호출을 막기에 전달이 가능하도록 수정함
                 .build();
