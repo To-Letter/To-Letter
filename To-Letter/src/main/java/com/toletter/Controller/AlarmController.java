@@ -5,6 +5,7 @@ import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Entity.User;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -24,7 +25,7 @@ public class AlarmController {
             @ApiImplicitParam(name = "request", value = "Authorization/refreshToken", dataType = "String", paramType = "header", example = "bearer token")
     })
     @ApiOperation(value = "실시간 알람 연결")
-    @GetMapping("/connect")
+    @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user =  userDetails.getUser();
 
