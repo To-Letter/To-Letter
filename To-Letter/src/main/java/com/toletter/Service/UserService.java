@@ -137,16 +137,16 @@ public class UserService {
     }
 
     // 로그아웃
-    public ResponseDTO logout(HttpServletRequest httpServletRequest, CustomUserDetails userDetails){
+    public ResponseDTO logout(HttpServletRequest httpServletRequest, HttpServletResponse response, CustomUserDetails userDetails){
         User user =  userDetails.getUser();
         alarmService.delete(user.getNickname());
         redisJwtService.deleteValues(user.getEmail());
-        jwtTokenProvider.expireToken(httpServletRequest);
+        jwtTokenProvider.expireToken(httpServletRequest, response);
         return ResponseDTO.res(200, "로그아웃 성공", "");
     }
 
     // 유저 탈퇴
-    public ResponseDTO userDelete(HttpServletRequest httpServletRequest, UserDeleteRequest userDeleteRequest, CustomUserDetails userDetails){
+    public ResponseDTO userDelete(HttpServletRequest httpServletRequest, HttpServletResponse response, UserDeleteRequest userDeleteRequest, CustomUserDetails userDetails){
         // 유저의 아이디가 존재하지 않으면
         if(!userRepository.existsByEmail(userDeleteRequest.getEmail())){
             return ResponseDTO.res(401, "유저 이메일이 없음.", "");
@@ -157,7 +157,7 @@ public class UserService {
         }
         alarmService.delete(user.getNickname());
         redisJwtService.deleteValues(userDeleteRequest.getEmail());
-        jwtTokenProvider.expireToken(httpServletRequest);
+        jwtTokenProvider.expireToken(httpServletRequest, response);
         userRepository.delete(user);
         return ResponseDTO.res(200, "탈퇴 성공", "");
     }
@@ -168,7 +168,7 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken(email, userRole);
 
         jwtTokenProvider.setHeaderAccessToken(response, accessToken);
-        jwtTokenProvider.setHeaderRefreshToken(response, refreshToken);
+        jwtTokenProvider.setCookieRefreshToken(response, refreshToken);
         redisJwtService.setValues(email, accessToken,refreshToken);
     }
 }

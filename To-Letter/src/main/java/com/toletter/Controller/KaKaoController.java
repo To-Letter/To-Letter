@@ -77,8 +77,8 @@ public class KaKaoController {
     })
     @ApiOperation(value = "카카오 유저 탈퇴")
     @DeleteMapping("/delete")
-    public ResponseDTO tokenKaKao(HttpServletRequest httpServletRequest, @RequestParam String code, @AuthenticationPrincipal CustomUserDetails userDetails) throws ParseException {
+    public ResponseDTO tokenKaKao(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, @RequestParam String code, @AuthenticationPrincipal CustomUserDetails userDetails) throws ParseException {
         Map token = kakaoService.getTokenUrl(code, "delete");
-        return kakaoService.userKaKaoDelete(httpServletRequest, token, userDetails);
+        return kakaoService.userKaKaoDelete(httpServletRequest, httpServletResponse, token, userDetails);
     }
 }

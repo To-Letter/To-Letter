@@ -13,8 +13,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:3000")
+                .allowedOrigins("https://to-letter-front.vercel.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                .exposedHeaders("Authorization", "refreshToken") // 헤더에 있는 값(토큰) 클라이언트 측에서 가져갈 수 있게 함.
+                .exposedHeaders("Authorization", "Set-Cookie") // 헤더에 있는 값(토큰) 클라이언트 측에서 가져갈 수 있게 함.
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }

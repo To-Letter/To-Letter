@@ -4,13 +4,14 @@ import com.toletter.Entity.User;
 import com.toletter.Enums.JwtErrorCode;
 import com.toletter.Enums.UserRole;
 import com.toletter.Repository.UserRepository;
-import com.toletter.Error.*;
 import com.toletter.Service.Jwt.CustomUserDetailService;
 import com.toletter.Service.Jwt.RedisJwtService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,9 @@ public class JwtTokenProvider {
     // 리프레시 토큰 유효시간 | 7d
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenValidTime;
+
+    @Value("${domain.api}")
+    private String domain;
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
     @PostConstruct // 의존성 주입 후, 초기화를 수행
@@ -127,14 +131,17 @@ public class JwtTokenProvider {
 
     // Request의 Header에서 RefreshToken 값을 가져옵니다. "refreshToken" : "token"
     public String resolveRefreshToken(HttpServletRequest request) {
-        if(!request.getHeader("refreshToken").isEmpty() ){
-            return request.getHeader("refreshToken").substring(7);
+        Cookie[] cookies = request.getCookies();
+        for(Cookie row : cookies){
+            if(row.getName().equals("RefreshToken")){
+                return row.getValue();
+            }
         }
         return null;
     }
 
     // Token 만료
-    public void expireToken(HttpServletRequest httpServletRequest) {
+    public void expireToken(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         String accessToken = this.resolveAccessToken(httpServletRequest);
         String refreshToken = this.resolveRefreshToken(httpServletRequest);
 
@@ -146,6 +153,11 @@ public class JwtTokenProvider {
                 .getBody();
         Date expiration = claims.getExpiration();
         Date now = new Date();
+
+        // 쿠키 만료
+        Cookie cookie = new Cookie("RefreshToken", null);
+        cookie.setMaxAge(0);
+        httpServletResponse.addCookie(cookie);
         redisJwtService.setBlackList(accessToken, refreshToken, (expiration.getTime()-now.getTime()));
     }
 
@@ -178,7 +190,16 @@ public class JwtTokenProvider {
     }
 
     // 리프레시 토큰 헤더 설정
-    public void setHeaderRefreshToken(HttpServletResponse response, String refreshToken) {
-        response.setHeader("refreshToken", "bearer "+ refreshToken);
+    public void setCookieRefreshToken(HttpServletResponse response, String refreshToken) {
+        ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", refreshToken)
+                .domain(domain)
+                .path("/") // 쿠키 경로
+                .maxAge(refreshTokenValidTime) // 유효시간
+                .secure(true)
+                .httpOnly(true) // js를 통해 쿠키에 접근 불가
+                .sameSite("None") // 다른 도메인에서의 호출을 막기에 전달이 가능하도록 수정함
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
     }
 }
