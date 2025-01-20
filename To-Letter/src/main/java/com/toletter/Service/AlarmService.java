@@ -48,7 +48,7 @@ public class AlarmService {
     // 알림 보내기
     private void sendToClient(SseEmitter emitter, String loginNickname, Object data){
         try{
-            emitter.send(SseEmitter.event().id(loginNickname).data(data));
+            emitter.send(SseEmitter.event().id(loginNickname).name("message").data(data));
         } catch (IOException e) {
             emitterRepository.deleteById(loginNickname);
             throw new ErrorException("e : " + e, 404, ErrorCode.NOT_FOUND_EXCEPTION);
