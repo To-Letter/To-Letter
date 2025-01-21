@@ -95,7 +95,7 @@ public class LetterService {
         receivedBoxRepository.save(saveReceivedBox.toEntity());
 
         // 알림 보내기
-        alarmService.scheduleTask(toUser.getNickname(), letter, arrivedDay);
+        alarmService.scheduleTask(toUser.getNickname(), letter.getId().toString(), arrivedDay);
         return ResponseDTO.res(200, "메일 보내기 성공", "");
     }
 
