@@ -1,6 +1,5 @@
 package com.toletter.Service;
 
-import com.toletter.Entity.Letter;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.EmitterRepository;
@@ -46,9 +45,9 @@ public class AlarmService {
     }
 
     // 알림 보내기
-    private void sendToClient(SseEmitter emitter, String loginNickname, Object data){
+    private void sendToClient(SseEmitter emitter, String loginNickname, String letterId){
         try{
-            emitter.send(SseEmitter.event().id(loginNickname).data(data));
+            emitter.send(SseEmitter.event().id(loginNickname).name("message").data(letterId));
         } catch (IOException e) {
             emitterRepository.deleteById(loginNickname);
             throw new ErrorException("e : " + e, 404, ErrorCode.NOT_FOUND_EXCEPTION);
@@ -56,11 +55,11 @@ public class AlarmService {
     }
 
     // 알림 보내려고 데이터 추가
-    public void send(String toNickname, Letter letter){
+    public void send(String toNickname, String letterId){
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterWithByMemberId(toNickname);
         emitters.forEach((key, emitter) -> {
-            emitterRepository.saveEventCache(key, letter);
-            sendToClient(emitter, key, letter);
+            emitterRepository.saveEventCache(key, letterId);
+            sendToClient(emitter, key, letterId);
         });
     }
 
@@ -70,11 +69,11 @@ public class AlarmService {
     }
 
     // 테스트 및 프론트 작업을 위해 1-5분으로 해놨지만 그 후에는 1-5일로 할 예정
-    public void scheduleTask(String nickname, Letter letter, int time) {
+    public void scheduleTask(String nickname, String letterId, int time) {
         scheduler.schedule(() -> {
             try{
                 System.out.println("새로운 알람이 왔어요!!!");
-                this.send(nickname, letter);
+                this.send(nickname, letterId);
             }catch (Exception e){
                 throw new ErrorException("스케줄러 에러 :  " + e.getMessage(), 400, ErrorCode.RUNTIME_EXCEPTION);
             }
