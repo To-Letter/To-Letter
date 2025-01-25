@@ -210,7 +210,7 @@ public class KakaoService {
 
             // 카카오 로그인인지와 탈퇴 유저가 맞는지 확인
             if(user.getLoginType().equals(LoginType.kakaoLogin) && user.getKakaoId().equals(userId)){
-                alarmService.delete(user.getNickname());
+                alarmService.delete(user.getEmail());
                 redisJwtService.deleteValues(user.getEmail());
                 jwtTokenProvider.expireToken(httpServletRequest, httpServletResponse);
                 userRepository.delete(user);
