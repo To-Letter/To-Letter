@@ -139,7 +139,7 @@ public class UserService {
     // 로그아웃
     public ResponseDTO logout(HttpServletRequest httpServletRequest, HttpServletResponse response, CustomUserDetails userDetails){
         User user =  userDetails.getUser();
-        alarmService.delete(user.getNickname());
+        alarmService.delete(user.getEmail());
         redisJwtService.deleteValues(user.getEmail());
         jwtTokenProvider.expireToken(httpServletRequest, response);
         return ResponseDTO.res(200, "로그아웃 성공", "");
@@ -155,7 +155,7 @@ public class UserService {
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return ResponseDTO.res(400, "비밀번호가 틀림", "");
         }
-        alarmService.delete(user.getNickname());
+        alarmService.delete(user.getEmail());
         redisJwtService.deleteValues(userDeleteRequest.getEmail());
         jwtTokenProvider.expireToken(httpServletRequest, response);
         userRepository.delete(user);

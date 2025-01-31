@@ -29,7 +29,7 @@ public class AlarmController {
     public SseEmitter subscribe(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user =  userDetails.getUser();
 
-        return alarmService.connect(user.getNickname());
+        return alarmService.connect(user.getEmail());
     }
 
 }
