@@ -10,6 +10,8 @@ import com.toletter.Enums.UserRole;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.JWT.JwtTokenProvider;
+import com.toletter.Repository.ReceivedBoxRepository;
+import com.toletter.Repository.SentBoxRepository;
 import com.toletter.Repository.UserRepository;
 import com.toletter.Service.Jwt.CustomUserDetails;
 import com.toletter.Service.Jwt.RedisJwtService;
@@ -47,6 +49,8 @@ public class KakaoService {
     String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
     String unLinkUrl = "https://kapi.kakao.com/v1/user/unlink";
     private final UserRepository userRepository;
+    private final ReceivedBoxRepository receivedBoxRepository;
+    private final SentBoxRepository sentBoxRepository;
     private final UserService userService;
     private final RedisJwtService redisJwtService;
     private final AlarmService alarmService;
@@ -210,6 +214,8 @@ public class KakaoService {
 
             // 카카오 로그인인지와 탈퇴 유저가 맞는지 확인
             if(user.getLoginType().equals(LoginType.kakaoLogin) && user.getKakaoId().equals(userId)){
+                receivedBoxRepository.deleteAllByLetterByUserEmail(user.getEmail());
+                sentBoxRepository.deleteAllByLetterByUserEmail(user.getEmail());
                 alarmService.delete(user.getEmail());
                 redisJwtService.deleteValues(user.getEmail());
                 jwtTokenProvider.expireToken(httpServletRequest, httpServletResponse);
