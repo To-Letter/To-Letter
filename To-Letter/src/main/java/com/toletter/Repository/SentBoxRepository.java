@@ -22,4 +22,9 @@ public interface SentBoxRepository extends JpaRepository<SentBox, Long> {
     @Transactional
     @Query("DELETE FROM SentBox s WHERE s.letter.id in :letterIds")
     void deleteAllByLetterIds(@Param("letterIds") List<Long> letterIds);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM SentBox s WHERE s.userEmail = :userEmail")
+    void deleteAllByLetterByUserEmail(@Param("userEmail") String userEmail);
 }

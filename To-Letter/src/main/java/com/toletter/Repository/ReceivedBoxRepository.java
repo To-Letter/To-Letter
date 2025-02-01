@@ -24,4 +24,9 @@ public interface ReceivedBoxRepository extends JpaRepository<ReceivedBox, Long> 
     @Transactional
     @Query("DELETE FROM ReceivedBox r WHERE r.letter.id in :letterIds")
     void deleteAllByLetterIds(@Param("letterIds") List<Long> letterIds);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ReceivedBox r WHERE r.userEmail = :userEmail")
+    void deleteAllByLetterByUserEmail(@Param("userEmail") String userEmail);
 }
