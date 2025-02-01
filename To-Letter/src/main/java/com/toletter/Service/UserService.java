@@ -3,6 +3,7 @@ package com.toletter.Service;
 import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
+import com.toletter.Entity.ReceivedBox;
 import com.toletter.Entity.User;
 import com.toletter.Enums.UserRole;
 import com.toletter.Error.ErrorCode;
@@ -22,6 +23,8 @@ import javax.servlet.http.*;
 @RequiredArgsConstructor // 초기화되지 않은 final 필드에 대해 생성자를 생성해줌.
 public class UserService {
     private final UserRepository userRepository;
+    private final ReceivedBoxRepository receivedBoxRepository;
+    private final SentBoxRepository sentBoxRepository;
     private final PasswordEncoder passwordEncoder;
     private  final JwtTokenProvider jwtTokenProvider;
     private final RedisJwtService redisJwtService;
@@ -155,6 +158,8 @@ public class UserService {
         if(!passwordEncoder.matches(userDeleteRequest.getPassword(), user.getPassword())){
             return ResponseDTO.res(400, "비밀번호가 틀림", "");
         }
+        receivedBoxRepository.deleteAllByLetterByUserEmail(user.getEmail());
+        sentBoxRepository.deleteAllByLetterByUserEmail(user.getEmail());
         alarmService.delete(user.getEmail());
         redisJwtService.deleteValues(userDeleteRequest.getEmail());
         jwtTokenProvider.expireToken(httpServletRequest, response);
