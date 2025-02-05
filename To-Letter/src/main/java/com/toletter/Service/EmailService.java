@@ -6,6 +6,7 @@ import com.toletter.DTO.auth.Request.EmailVerifyRequest;
 import com.toletter.Entity.Auth;
 import com.toletter.Entity.User;
 import com.toletter.Enums.AuthType;
+import com.toletter.Enums.LoginType;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
 import com.toletter.Repository.AuthRepository;
@@ -81,8 +82,9 @@ public class EmailService {
 
     // 비밀번호 변경을 위한 메일 보내기
     public ResponseDTO emailPassword(String toEmail) throws MessagingException {
-        if(!userRepository.existsByEmail(toEmail) || !userRepository.findByEmail(toEmail).get().isSecondConfirmed()){
-            return ResponseDTO.res(401, "비밀번호 변경 이메일 전송 실패 / 유저 없음(혹은 2차인증이 되지 않은 유저임)", "");
+        User user = userRepository.findByEmail(toEmail).orElseThrow();
+        if(!userRepository.existsByEmail(toEmail) || !user.isSecondConfirmed() || user.getLoginType().equals(LoginType.kakaoLogin)){
+            return ResponseDTO.res(401, "비밀번호 변경 이메일 전송 실패 / 유저 없음(혹은 2차인증이 되지 않은 유저임) / 카카오 유저임", "");
         }
 
         if(authRepository.existsByEmailAndAuthType(toEmail, AuthType.updatePW)){
