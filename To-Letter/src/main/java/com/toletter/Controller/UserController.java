@@ -84,7 +84,7 @@ public class UserController {
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "비밀번호 변경 성공"),
             @ApiResponse(code = 400, message = "비밀번호 변경 실패 / 원래 비밀번호와 같음"),
-            @ApiResponse(code = 401, message = "유저가 없음(이메일이 없음)"),
+            @ApiResponse(code = 401, message = "유저가 없음(이메일이 없음) / 카카오 유저임"),
             @ApiResponse(code = 403, message = "비밀번호 변경 실패 / 2차 인증이 되지 않음"),
             @ApiResponse(code = 404, message = "비밀번호 변경 실패 / 이메일로 검증 안됨")
     })
@@ -97,7 +97,8 @@ public class UserController {
     // 비밀번호 변경(로그인O)
     @ApiResponses( value ={
             @ApiResponse(code = 200, message = "비밀번호 변경 성공"),
-            @ApiResponse(code = 401, message = "비밀번호 변경 실패 / 현재 비밀번호 틀림"),
+            @ApiResponse(code = 401, message = "비밀번호 변경 실패 / 카카오 유저임"),
+            @ApiResponse(code = 403, message = "비밀번호 변경 실패 / 현재 비밀번호 틀림"),
             @ApiResponse(code = 1001, message = "유효하지 않은 토큰"),
             @ApiResponse(code = 1002, message = "빈 문자열 토큰"),
             @ApiResponse(code = 1003, message = "만료된 토큰"),

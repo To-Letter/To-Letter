@@ -3,8 +3,8 @@ package com.toletter.Service;
 import com.toletter.DTO.ResponseDTO;
 import com.toletter.DTO.user.Request.*;
 import com.toletter.DTO.user.Response.*;
-import com.toletter.Entity.ReceivedBox;
 import com.toletter.Entity.User;
+import com.toletter.Enums.LoginType;
 import com.toletter.Enums.UserRole;
 import com.toletter.Error.ErrorCode;
 import com.toletter.Error.ErrorException;
@@ -93,6 +93,10 @@ public class UserService {
         User user = userRepository.findByEmail(userFindUpdatePWRequest.getEmail()).orElseThrow(() ->
             new ErrorException("비밀번호 변경 실패 / 유저가 없음(이메일이 없음)", 200, ErrorCode.UNAUTHORIZED_EXCEPTION)
         );
+        // 카카오 유저는 비밀번호 변경 안되게 막아놓기
+        if(user.getLoginType().equals(LoginType.kakaoLogin)){
+            return ResponseDTO.res(401, "비밀번호 변경 실패 / 유저가 없음(카카오 유저임)", "");
+        }
         if(!user.isSecondConfirmed()){
             return ResponseDTO.res(403, "비밀번호 변경 실패 / 2차 인증이 되지 않음", "");
         }
@@ -112,9 +116,13 @@ public class UserService {
     //비밀번호 변경(로그인O)
     public ResponseDTO updatePassword(CustomUserDetails userDetails, UserUpdatePWRequest userUpdatePWRequest){
         User user = userDetails.getUser();
+        // 카카오 유저는 비밀번호 변경 안되게 막아놓기
+        if(user.getLoginType().equals(LoginType.kakaoLogin)){
+            return ResponseDTO.res(401, "비밀번호 변경 실패 / 카카오 유저임", "");
+        }
 
         if(!passwordEncoder.matches(userUpdatePWRequest.getNowPassword(), user.getPassword())){
-            return ResponseDTO.res(401, "비밀번호 변경 실패 / 현재 비밀번호 틀림", "");
+            return ResponseDTO.res(403, "비밀번호 변경 실패 / 현재 비밀번호 틀림", "");
         }
 
         user.updatePassword(passwordEncoder.encode(userUpdatePWRequest.getChangePassword()));
