@@ -240,7 +240,7 @@ public class LetterService {
             return 3;
         } else if (distance < 80) {
             return 4;
-        } else if (distance > 100) {
+        } else if (distance >= 80) {
             return 5;
         } else {
             throw new ErrorException("거리가 나오지 않습니다.", 404,ErrorCode.NOT_FOUND_EXCEPTION);
